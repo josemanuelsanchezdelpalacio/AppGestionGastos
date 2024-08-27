@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "185327801715",
+    "project_id": "appgestiongastos-676e0",
+    "storage_bucket": "appgestiongastos-676e0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185327801715:android:b93904b770af6678f2e106",
+        "android_client_info": {
+          "package_name": "com.dam2jms.appgestiongastos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBOzTMdp_MuwgHQGljniLybOhL-jYYsrg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
