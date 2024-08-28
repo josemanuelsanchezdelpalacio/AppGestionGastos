@@ -2,9 +2,12 @@ package com.dam2jms.appgestiongastos.screens
 
 import android.app.DatePickerDialog
 import android.os.Build
+import android.widget.Button
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,6 +18,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,16 +41,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.dam2jms.appgestiongastos.components.Components.RadioButtonWithLabel
 import com.dam2jms.appgestiongastos.components.Components.menu
 import com.dam2jms.appgestiongastos.models.HomeViewModel
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
+import com.dam2jms.appgestiongastos.states.Transaccion
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
+import com.dam2jms.appgestiongastos.ui.theme.NaranjaClaro
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaOscuro
+import com.google.type.Color
 import com.google.type.DateTime
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -53,7 +66,6 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(navController: NavController, mvvm: TransactionViewModel){
-
 
     val uiState by mvvm.uiState.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -78,8 +90,7 @@ fun HistoryScreen(navController: NavController, mvvm: TransactionViewModel){
                                     if(isClosed) open() else close()
                                 }
                             }
-                        }
-                        ) {
+                        }) {
                             Icon(imageVector = Icons.Default.Menu, contentDescription = "icono menu", tint = Blanco)
                         }
                     },
@@ -104,10 +115,10 @@ fun HistoryScreen(navController: NavController, mvvm: TransactionViewModel){
 @Composable
 fun HistoryScreenBody(paddingValues: PaddingValues, mvvm: TransactionViewModel, uiState: UiState){
 
-    val uiState by mvvm.uiState.collectAsState()
-    val (busquedaCategoria, setBusquedaCategoria) = remember { mutableStateOf("") }
-    val (busquedaFecha, setBusquedaFecha) = remember { mutableStateOf<LocalDate?>(null) }
-    val scope = rememberCoroutineScope()
+    var busquedaCategoria by remember { mutableStateOf("") }
+    var busquedaFecha by remember { mutableStateOf("") }
+    var tipoSeleccionado by remember { mutableStateOf<String?>(null) }
+    var transaccionesFiltradas by remember { mutableStateOf(uiState.ingresos + uiState.gastos) }
 
     Column(
         modifier = Modifier
@@ -115,9 +126,34 @@ fun HistoryScreenBody(paddingValues: PaddingValues, mvvm: TransactionViewModel, 
             .padding(paddingValues)
             .padding(16.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            RadioButtonWithLabel(
+                selected = tipoSeleccionado == "ingreso",
+                onClick = { tipoSeleccionado = "ingreso" },
+                label = "Ingresos"
+            )
+
+            RadioButtonWithLabel(
+                selected = tipoSeleccionado == "gasto",
+                onClick = { tipoSeleccionado = "gasto" },
+                label = "Gastos"
+            )
+
+            RadioButtonWithLabel(
+                selected = tipoSeleccionado == null,
+                onClick = { tipoSeleccionado = null },
+                label = "Todos"
+            )
+        }
+
         OutlinedTextField(
             value = busquedaCategoria,
-            onValueChange = { setBusquedaCategoria(it) },
+            onValueChange = { busquedaCategoria = it },
             label = { Text("Buscar por categoria") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -125,29 +161,39 @@ fun HistoryScreenBody(paddingValues: PaddingValues, mvvm: TransactionViewModel, 
         )
 
         OutlinedTextField(
-            value = busquedaFecha?.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))?:"",
-            onValueChange = {
-                val fecha = runCatching {
-                    LocalDate.parse(it, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                }.getOrNull()
-                setBusquedaFecha(fecha)
-            },
+            value = busquedaFecha,
+            onValueChange = { busquedaFecha = it },
             label = { Text("Buscar por fecha (dd/MM/yyyy)") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
         )
 
-        //para filtrar transacciones por categoria o fecha
-        val filtroTransacciones = uiState.ingresos.plus(uiState.gastos).filter { transaccion ->
-            transaccion.descripcion.contains(busquedaCategoria, ignoreCase = true) &&
-                    (busquedaFecha == null || transaccion.fecha == busquedaFecha.format(DateTimeFormatter.ISO_DATE))
+        Button(
+            onClick = {
+                val fechaFiltro = runCatching {
+                    LocalDate.parse(busquedaFecha, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                }.getOrNull()
+
+                transaccionesFiltradas = when(tipoSeleccionado){
+                    "ingreso" -> uiState.ingresos
+                    "gasto" -> uiState.gastos
+                    else -> uiState.ingresos + uiState.gastos
+                }.filter { transaccion ->
+                    (busquedaCategoria.isEmpty() || transaccion.descripcion.contains(busquedaCategoria, ignoreCase = true)) &&
+                            (fechaFiltro == null || transaccion.fecha == fechaFiltro.format(DateTimeFormatter.ISO_DATE))
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text("Filtrar")
         }
 
-        //mostrar transacciones filtradas o mensaje si no hay resultados
-        if(busquedaCategoria.isNotEmpty() || busquedaFecha != null){
+        if(transaccionesFiltradas.isNotEmpty()){
             LazyColumn {
-                items(filtroTransacciones){ transaccion ->
+                items(transaccionesFiltradas){ transaccion ->
                     TransactionItem(transaccion = transaccion)
                 }
             }
@@ -159,6 +205,4 @@ fun HistoryScreenBody(paddingValues: PaddingValues, mvvm: TransactionViewModel, 
             )
         }
     }
-
-
 }

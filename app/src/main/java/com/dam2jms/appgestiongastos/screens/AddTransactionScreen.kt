@@ -78,6 +78,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.dam2jms.appgestiongastos.components.Components.RadioButtonWithLabel
 import com.dam2jms.appgestiongastos.data.Categoria
 import com.dam2jms.appgestiongastos.components.Components.menu
 import com.dam2jms.appgestiongastos.models.CategoryViewModel
@@ -115,15 +116,6 @@ fun AddTransactionScreen(navController: NavController, mvvm: TransactionViewMode
                 CenterAlignedTopAppBar(
                     title = { Text(text = "Añadir Transacción", color = Color.White) },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowBack,
-                                contentDescription = "Atrás",
-                                tint = Color.White
-                            )
-                        }
-                    },
-                    actions = {
                         IconButton(onClick = {
                             scope.launch {
                                 if (drawerState.isClosed) drawerState.open() else drawerState.close()
@@ -132,147 +124,136 @@ fun AddTransactionScreen(navController: NavController, mvvm: TransactionViewMode
                             Icon(imageVector = Icons.Default.Menu, contentDescription = "Menú", tint = Color.White)
                         }
                     },
+                    actions = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = "Atrás",
+                                tint = Color.White
+                            )
+                        }
+                    },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = NaranjaOscuro)
                 )
             }
         ) { paddingValues ->
-            AddTransactionScreenBody(
-                paddingValues = paddingValues,
-                uiState = uiState,
-                navController = navController,
-                mvvm = mvvm,
-                context = context,
-                categoryViewModel = categoryViewModel
-            )
+            AddTransactionScreenBody(paddingValues = paddingValues, uiState = uiState, navController = navController, mvvm = mvvm, context = context, categoryViewModel = categoryViewModel)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddTransactionScreenBody(
-    paddingValues: PaddingValues,
-    uiState: UiState,
-    navController: NavController,
-    mvvm: TransactionViewModel,
-    context: Context,
-    categoryViewModel: CategoryViewModel
-) {
+fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, navController: NavController, mvvm: TransactionViewModel, context: Context, categoryViewModel: CategoryViewModel) {
 
     val categorias by categoryViewModel.categories.collectAsState()
-    var expanded by remember { mutableStateOf(false) }
 
-    // Use LazyColumn as the only scrollable component
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(16.dp)
+            .padding(paddingValues)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
-            OutlinedTextField(
-                value = uiState.cantidad,
-                onValueChange = { newValue -> mvvm.actualizarDatosTransaccion(newValue, uiState.descripcion, uiState.tipo) },
-                label = { Text("Cantidad") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Cantidad") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-        }
+        OutlinedTextField(
+            value = uiState.cantidad,
+            onValueChange = { newValue -> mvvm.actualizarDatosTransaccion(newValue, uiState.descripcion, uiState.tipo) },
+            label = { Text("Cantidad") },
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Cantidad") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
-        item {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                RadioButton(
-                    selected = uiState.tipo == "ingreso",
-                    onClick = {
-                        mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.descripcion, "ingreso")
-                        categoryViewModel.obtenerCategorias("ingreso")
-                    },
-                    colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
-                )
-                Text(
-                    text = "Ingreso",
-                    modifier = Modifier.padding(start = 8.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = NaranjaClaro
-                )
-                Spacer(modifier = Modifier.width(32.dp))
-                RadioButton(
-                    selected = uiState.tipo == "gasto",
-                    onClick = {
-                        mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.descripcion, "gasto")
-                        categoryViewModel.obtenerCategorias("gasto")
-                    },
-                    colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
-                )
-                Text(
-                    text = "Gasto",
-                    modifier = Modifier.padding(start = 8.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = NaranjaClaro
-                )
-            }
-        }
+        OutlinedTextField(
+            value = uiState.descripcion,
+            onValueChange = { newValue -> mvvm.actualizarDatosTransaccion(uiState.cantidad, newValue, uiState.tipo) },
+            label = { Text("Descripcion") },
+            leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Descripcion") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
-        items(categorias) { categoria ->
-            CategoriaItem(
-                categoria = categoria,
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            RadioButtonWithLabel(
+                selected = uiState.tipo == "ingreso",
                 onClick = {
-                    mvvm.actualizarDatosTransaccion(uiState.cantidad, categoria.nombre, uiState.tipo)
-                }
-            )
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    val cantidadValida = mvvm.validarCantidad(context, uiState.cantidad)
-                    val descripcionValida = mvvm.validarDescripcion(context, uiState.descripcion)
-                    val tipoSeleccionado = uiState.tipo.isNotEmpty()
-
-                    if (!tipoSeleccionado) {
-                        Toast.makeText(context, "Debe seleccionar Ingresos o Gastos", Toast.LENGTH_SHORT).show()
-                    }
-
-                    if (cantidadValida && descripcionValida) {
-                        val transaction = Transaccion(
-                            id = "",
-                            cantidad = uiState.cantidad.toDoubleOrNull() ?: 0.0,
-                            descripcion = uiState.descripcion,
-                            fecha = LocalDate.now().format(DateTimeFormatter.ISO_DATE),
-                            tipo = uiState.tipo
-                        )
-                        mvvm.agregarTransaccion(transaction, context)
-                        navController.popBackStack()
-                    }
+                    mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.descripcion, "ingreso")
+                    categoryViewModel.obtenerCategorias("ingreso")
                 },
+                label = "Ingreso"
+            )
+
+            RadioButtonWithLabel(
+                selected = uiState.tipo == "gasto",
+                onClick = {
+                    mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.descripcion, "gasto")
+                    categoryViewModel.obtenerCategorias("gasto")
+                },
+                label = "Gasto"
+            )
+        }
+
+        if(uiState.tipo.isNotEmpty()){
+            LazyColumn(
                 modifier = Modifier
-                    .height(56.dp)
+                    .weight(1f)
                     .fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = NaranjaClaro,
-                    contentColor = Blanco
-                )
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "Añadir Transacción",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold
-                )
+                items(categorias) { categoria ->
+                    CategoriaItem(
+                        categoria = categoria,
+                        onClick = {
+                            mvvm.actualizarDatosTransaccion(uiState.cantidad, categoria.nombre, uiState.tipo)
+                        }
+                    )
+                }
             }
+        }
+
+
+        Button(
+            onClick = {
+                val cantidadValida = mvvm.validarCantidad(context, uiState.cantidad)
+                val descripcionValida = mvvm.validarDescripcion(context, uiState.descripcion)
+                val tipoSeleccionado = uiState.tipo.isNotEmpty()
+
+                if (!tipoSeleccionado) {
+                    Toast.makeText(
+                        context,
+                        "Debe seleccionar Ingresos o Gastos",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                if (cantidadValida && descripcionValida) {
+                    val transaction = Transaccion(
+                        id = "",
+                        cantidad = uiState.cantidad.toDoubleOrNull() ?: 0.0,
+                        descripcion = uiState.descripcion,
+                        fecha = LocalDate.now().format(DateTimeFormatter.ISO_DATE),
+                        tipo = uiState.tipo
+                    )
+                    mvvm.agregarTransaccion(transaction, context)
+                    navController.popBackStack()
+                }
+            },
+            modifier = Modifier
+                .height(56.dp)
+                .fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = NaranjaClaro,
+                contentColor = Blanco
+            )
+        ) {
+            Text(
+                text = "Añadir Transacción",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -284,9 +265,7 @@ fun CategoriaItem(categoria: Categoria, onClick: () -> Unit){
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(

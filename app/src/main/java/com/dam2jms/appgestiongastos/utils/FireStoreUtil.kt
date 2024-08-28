@@ -20,20 +20,29 @@ object FireStoreUtil {
      * @param onSuccess Función a ejecutar en caso de éxito con la lista de transacciones.
      * @param onFailure Función a ejecutar en caso de error.
      */
-    fun obtenerTransacciones(onSuccess: (List<Transaccion>) -> Unit, onFailure: (Exception) -> Unit) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+    fun obtenerTransacciones(
+        onSuccess: (List<Transaccion>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val userId = Firebase.auth.currentUser?.uid ?: return
 
         db.collection("users")
             .document(userId)
-            .collection("transacciones")  // Cambia esto si usas diferentes colecciones para ingresos y gastos
+            .collection("ingresos")
             .get()
-            .addOnSuccessListener { snapshot ->
-                val transacciones = snapshot.documents.mapNotNull { it.toObject(Transaccion::class.java) }
-                onSuccess(transacciones)
+            .addOnSuccessListener { ingresosSnapshot ->
+                val ingresos = ingresosSnapshot.toObjects(Transaccion::class.java)
+                db.collection("users")
+                    .document(userId)
+                    .collection("gastos")
+                    .get()
+                    .addOnSuccessListener { gastosSnapshot ->
+                        val gastos = gastosSnapshot.toObjects(Transaccion::class.java)
+                        onSuccess(ingresos + gastos)
+                    }
+                    .addOnFailureListener { onFailure(it) }
             }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
-            }
+            .addOnFailureListener { onFailure(it) }
     }
 
     /**
@@ -43,33 +52,24 @@ object FireStoreUtil {
      * @param onSuccess Función a ejecutar en caso de éxito.
      * @param onFailure Función a ejecutar en caso de error.
      */
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun agregarTransaccion(transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        val coleccion = if (transaccion.tipo == "ingreso") "ingresos" else "gastos"
-        val idTransaccion = db.collection("users")
-            .document(userId)
-            .collection(coleccion)
-            .document().id
 
-        val nuevaTransaccion = transaccion.copy(
-            id = idTransaccion,
-            fecha = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
-        )
+    fun añadirTransaccion(
+        collection: String,
+        transaccion: Transaccion,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val userId = Firebase.auth.currentUser?.uid ?: return
 
         db.collection("users")
             .document(userId)
-            .collection(coleccion)
-            .document(idTransaccion)
-            .set(nuevaTransaccion)
-            .addOnSuccessListener {
-                onSuccess()
-            }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
-            }
+            .collection(collection)
+            .add(transaccion)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
     }
 }
+
 
 

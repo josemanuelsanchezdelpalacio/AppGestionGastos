@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -226,6 +227,26 @@ object Components {
                 keyboardType = if (isPasswordField) KeyboardType.Password else KeyboardType.Email
             )
         )
+    }
+
+    @Composable
+    fun RadioButtonWithLabel(selected: Boolean, onClick: () -> Unit, label: String) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable(onClick = onClick)
+        ) {
+            RadioButton(
+                selected = selected,
+                onClick = null,
+                colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (selected) NaranjaClaro else Color.Black,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
     }
 
 }
