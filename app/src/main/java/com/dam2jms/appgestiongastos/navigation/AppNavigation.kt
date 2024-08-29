@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dam2jms.appgestiongastos.data.CategoriaAPI
 import com.dam2jms.appgestiongastos.models.CategoryViewModel
+import com.dam2jms.appgestiongastos.models.CurrencyViewModel
 import com.dam2jms.appgestiongastos.models.HomeViewModel
 import com.dam2jms.appgestiongastos.models.LoginViewModel
 import com.dam2jms.appgestiongastos.models.RegisterViewModel
@@ -38,7 +39,7 @@ fun AppNavigation(){
         }
 
         composable(AppScreen.HomeScreen.route){
-            HomeScreen(navController, mvvm = HomeViewModel())
+            HomeScreen(navController, mvvm = HomeViewModel(), currencyViewModel = CurrencyViewModel())
         }
         composable(
             route = AppScreen.TransactionScreen.route,

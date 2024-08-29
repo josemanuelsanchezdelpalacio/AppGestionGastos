@@ -26,10 +26,15 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -39,7 +44,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.components.Components.menu
+import com.dam2jms.appgestiongastos.models.CurrencyViewModel
 import com.dam2jms.appgestiongastos.models.HomeViewModel
 import com.dam2jms.appgestiongastos.models.LoginViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
@@ -67,11 +76,16 @@ import java.util.Locale
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, mvvm: HomeViewModel){
+fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewModel: CurrencyViewModel){
 
     val uiState by mvvm.uiState.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    val availableCurrencies by currencyViewModel.availableCurrencies.collectAsState()
+    var selectedCurrency by remember { mutableStateOf("EUR") }
+    var isExpanded by remember { mutableStateOf(false) }
+
 
     //para el menu lateral
     ModalNavigationDrawer(
@@ -105,16 +119,18 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel){
                 )
             },
             content = { paddingValues ->
-                HomeScreenBody(paddingValues = paddingValues, uiState = uiState)
+                HomeScreenBody(paddingValues = paddingValues, uiState = uiState, availableCurrencies = availableCurrencies, selectedCurrency = selectedCurrency, onCurrencySelected = { selectedCurrency = it }, currencyViewModel = currencyViewModel)
             }
         )
     }
-    
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState){
+fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurrencies: List<String>, selectedCurrency: String, onCurrencySelected: (String) -> Unit, currencyViewModel: CurrencyViewModel) {
+
+    val conversionResult by currencyViewModel.conversionResult.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -143,6 +159,53 @@ fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState){
                 gastosDiarios = uiState.gastosDiarios,
                 gastosMensuales = uiState.gastosMensuales
             )
+        }
+        item {
+            Text(
+                "Selecciona una moneda para ver tus finanzas:",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            var isExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = isExpanded,
+                onExpandedChange = { isExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = selectedCurrency,
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
+                    modifier = Modifier.menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false }
+                ) {
+                    availableCurrencies.forEach { currency ->
+                        DropdownMenuItem(
+                            text = { Text(currency) },
+                            onClick = {
+                                onCurrencySelected(currency)
+                                currencyViewModel.convertCurrency(
+                                    uiState.ingresosMensuales.toDouble(),
+                                    "EUR",
+                                    currency
+                                )
+                                isExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        item {
+            conversionResult?.let { result ->
+                Text(
+                    "Tus ingresos mensuales en $selectedCurrency: ${String.format("%.2f", result)}",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
         }
     }
 }
