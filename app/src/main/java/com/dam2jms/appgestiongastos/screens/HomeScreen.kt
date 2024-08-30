@@ -82,10 +82,12 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val availableCurrencies by currencyViewModel.availableCurrencies.collectAsState()
-    var selectedCurrency by remember { mutableStateOf("EUR") }
-    var isExpanded by remember { mutableStateOf(false) }
+    val monedasDisponibles by currencyViewModel.availableCurrencies.collectAsState()
+    var seleccionMoneda by remember { mutableStateOf(uiState.monedaActual) }
 
+    LaunchedEffect(seleccionMoneda) {
+        mvvm.actualizarMoneda(seleccionMoneda)
+    }
 
     //para el menu lateral
     ModalNavigationDrawer(
@@ -119,7 +121,7 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
                 )
             },
             content = { paddingValues ->
-                HomeScreenBody(paddingValues = paddingValues, uiState = uiState, availableCurrencies = availableCurrencies, selectedCurrency = selectedCurrency, onCurrencySelected = { selectedCurrency = it }, currencyViewModel = currencyViewModel)
+                HomeScreenBody(paddingValues = paddingValues, uiState = uiState, availableCurrencies = monedasDisponibles, selectedCurrency = seleccionMoneda, onCurrencySelected = { seleccionMoneda = it }, currencyViewModel = currencyViewModel)
             }
         )
     }
@@ -130,90 +132,82 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
 @Composable
 fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurrencies: List<String>, selectedCurrency: String, onCurrencySelected: (String) -> Unit, currencyViewModel: CurrencyViewModel) {
 
-    val conversionResult by currencyViewModel.conversionResult.collectAsState()
+    val conversionMoneda by currencyViewModel.conversionResult.collectAsState()
 
     LazyColumn(
         modifier = Modifier
-            .padding(paddingValues)
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
-            graficoCircularConInfo(
-                gastos = uiState.gastosMensuales.toFloat(),
-                ingresos = uiState.ingresosMensuales.toFloat()
-            )
-        }
-        item {
-            cajaAhorros(
-                ahorrosDiarios = uiState.ahorrosDiarios,
-                ahorrosMensuales = uiState.ahorrosMensuales
-            )
-        }
-        item {
-            cajaFinanzasFijas(
-                ingresosDiarios = uiState.ingresosDiarios,
-                ingresosMensuales = uiState.ingresosMensuales,
-                gastosDiarios = uiState.gastosDiarios,
-                gastosMensuales = uiState.gastosMensuales
-            )
-        }
-        item {
-            Text(
-                "Selecciona una moneda para ver tus finanzas:",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            var isExpanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(
-                expanded = isExpanded,
-                onExpandedChange = { isExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = selectedCurrency,
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
-                    modifier = Modifier.menuAnchor()
+            item {
+                Text(
+                    "Selecciona una moneda para ver tus finanzas:",
+                    style = MaterialTheme.typography.bodyLarge
                 )
-                ExposedDropdownMenu(
+                Spacer(modifier = Modifier.height(8.dp))
+
+                var isExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(
                     expanded = isExpanded,
-                    onDismissRequest = { isExpanded = false }
+                    onExpandedChange = { isExpanded = it }
                 ) {
-                    availableCurrencies.forEach { currency ->
-                        DropdownMenuItem(
-                            text = { Text(currency) },
-                            onClick = {
-                                onCurrencySelected(currency)
-                                currencyViewModel.convertCurrency(
-                                    uiState.ingresosMensuales.toDouble(),
-                                    "EUR",
-                                    currency
-                                )
-                                isExpanded = false
-                            }
-                        )
+                    OutlinedTextField(
+                        value = selectedCurrency,
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
+                        modifier = Modifier.menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = isExpanded,
+                        onDismissRequest = { isExpanded = false }
+                    ) {
+                        availableCurrencies.forEach { currency ->
+                            DropdownMenuItem(
+                                text = { Text(currency) },
+                                onClick = {
+                                    onCurrencySelected(currency)
+                                    isExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
-        }
-        item {
-            conversionResult?.let { result ->
-                Text(
-                    "Tus ingresos mensuales en $selectedCurrency: ${String.format("%.2f", result)}",
-                    style = MaterialTheme.typography.bodyLarge
+
+            item {
+                graficoCircularConInfo(
+                    gastos = uiState.gastosMensuales.toFloat(),
+                    ingresos = uiState.ingresosMensuales.toFloat(),
+                    moneda = selectedCurrency
                 )
             }
-        }
+            item {
+                cajaAhorros(
+                    ahorrosDiarios = uiState.ahorrosDiarios,
+                    ahorrosMensuales = uiState.ahorrosMensuales,
+                    moneda = selectedCurrency
+                )
+            }
+            item {
+                cajaFinanzasFijas(
+                    ingresosDiarios = uiState.ingresosDiarios,
+                    ingresosMensuales = uiState.ingresosMensuales,
+                    gastosDiarios = uiState.gastosDiarios,
+                    gastosMensuales = uiState.gastosMensuales,
+                    moneda = selectedCurrency
+                )
+            }
     }
 }
 
 
+
 /**muestra un grafico circular con los gastos e ingresos */
 @Composable
-fun graficoCircularConInfo(gastos: Float, ingresos: Float ){
+fun graficoCircularConInfo(gastos: Float, ingresos: Float, moneda: String){
 
     //calcula el total sumando gastos e ingresos
     val total = gastos + ingresos
@@ -269,8 +263,8 @@ fun graficoCircularConInfo(gastos: Float, ingresos: Float ){
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Gastos mes", color = Blanco, fontWeight = FontWeight.Bold)
-                    Text(text = String.format("%.2f €", ingresos), color = Blanco, fontSize = 16.sp)
+                    Text(text = "Ingresos mes", color = Blanco, fontWeight = FontWeight.Bold)
+                    Text(text = String.format("%.2f €", ingresos, moneda), color = Blanco, fontSize = 16.sp)
                 }
             }
 
@@ -283,8 +277,8 @@ fun graficoCircularConInfo(gastos: Float, ingresos: Float ){
                     .padding(12.dp)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Ingresos mes", color = Blanco, fontWeight = FontWeight.Bold)
-                    Text(text = String.format("%.2f €", gastos), color = Blanco, fontSize = 16.sp)
+                    Text(text = "Gastos mes", color = Blanco, fontWeight = FontWeight.Bold)
+                    Text(text = String.format("%.2f €", gastos, moneda), color = Blanco, fontSize = 16.sp)
                 }
             }
         }
@@ -295,7 +289,7 @@ fun graficoCircularConInfo(gastos: Float, ingresos: Float ){
 /** muestra informacion dentro de una caja sobre la cantidad ahorrada por el usuario en el ultimo mes y ultimo año*/
 @Composable
 @RequiresApi(Build.VERSION_CODES.O)
-fun cajaAhorros(ahorrosDiarios: Long, ahorrosMensuales: Long){
+fun cajaAhorros(ahorrosDiarios: Long, ahorrosMensuales: Long, moneda: String){
 
     //obtengo el mes actual a tiempo real
     val mesActual = LocalDate.now().month.getDisplayName(TextStyle.FULL, Locale("es"))
@@ -314,11 +308,11 @@ fun cajaAhorros(ahorrosDiarios: Long, ahorrosMensuales: Long){
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)){
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = "Ahorro diario", color = Blanco, fontWeight = FontWeight.Bold)
-                    Text(text = String.format("%.2f €", ahorrosDiarios.toDouble()), color = Blanco)
+                    Text(text = String.format("%.2f €", ahorrosDiarios.toDouble(), moneda), color = Blanco)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = "Ahorro mensual (${mesActual.capitalize()})", color = Blanco, fontWeight = FontWeight.Bold)
-                    Text(text = String.format("%.2f €", ahorrosMensuales.toDouble()), color = Blanco)
+                    Text(text = String.format("%.2f €", ahorrosMensuales.toDouble(), moneda), color = Blanco)
                 }
             }
 
@@ -329,7 +323,7 @@ fun cajaAhorros(ahorrosDiarios: Long, ahorrosMensuales: Long){
 
 /**lo mismo que el anterior pero para mostrar ingresos/gastos anuales y mensuales*/
 @Composable
-fun cajaFinanzasFijas(ingresosDiarios: Long, ingresosMensuales: Long, gastosDiarios: Long, gastosMensuales: Long){
+fun cajaFinanzasFijas(ingresosDiarios: Long, ingresosMensuales: Long, gastosDiarios: Long, gastosMensuales: Long, moneda: String){
 
     Box(
         modifier = Modifier
@@ -351,11 +345,11 @@ fun cajaFinanzasFijas(ingresosDiarios: Long, ingresosMensuales: Long, gastosDiar
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Ingresos diarios", color = Blanco, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text(String.format("%.2f €", ingresosDiarios.toDouble()), color = Blanco, fontSize = 16.sp)
+                    Text(String.format("%.2f €", ingresosDiarios.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Ingresos mensuales", color = Blanco, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text(String.format("%.2f €", ingresosMensuales.toDouble()), color = Blanco, fontSize = 16.sp)
+                    Text(String.format("%.2f €", ingresosMensuales.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
                 }
             }
 
@@ -364,11 +358,11 @@ fun cajaFinanzasFijas(ingresosDiarios: Long, ingresosMensuales: Long, gastosDiar
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Gastos diarios", color = Blanco, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text(String.format("%.2f €", gastosDiarios.toDouble()), color = Blanco, fontSize = 16.sp)
+                    Text(String.format("%.2f €", gastosDiarios.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Gastos mensuales", color = Blanco, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text(String.format("%.2f €", gastosMensuales.toDouble()), color = Blanco, fontSize = 16.sp)
+                    Text(String.format("%.2f €", gastosMensuales.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
                 }
             }
         }

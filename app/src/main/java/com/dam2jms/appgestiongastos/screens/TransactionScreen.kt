@@ -80,7 +80,6 @@ fun TransactionScreen(navController: NavController, mvvm: TransactionViewModel, 
 
     val uiState by mvvm.uiState.collectAsState()
 
-
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -113,12 +112,11 @@ fun TransactionScreen(navController: NavController, mvvm: TransactionViewModel, 
                         IconButton(onClick = {
                             mvvm.showDatePicker(context, fecha){ nuevaFecha ->
                                 fecha = nuevaFecha
-                                navController.navigate(AppScreen.TransactionScreen.route)
                             }
                         }) {
                             Icon(imageVector = Icons.Default.CalendarToday, contentDescription = "seleccion fecha", tint = Blanco)
                         }
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate(AppScreen.HomeScreen.route) }) {
                             Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "atras", tint = Blanco)
                         }
                     },

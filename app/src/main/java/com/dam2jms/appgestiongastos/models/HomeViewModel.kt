@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.dam2jms.appgestiongastos.states.Transaccion
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
@@ -42,17 +43,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.O)
 class HomeViewModel: ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private val db = Firebase.firestore
+    private val currencyViewModel = CurrencyViewModel()
 
     init {
         leerTransacciones()
@@ -150,6 +154,24 @@ class HomeViewModel: ViewModel() {
 
 
 
+    }
+
+    fun actualizarMoneda(nuevaMoneda: String){
+        viewModelScope.launch {
+            val tasaCambio = currencyViewModel.obtenerTasaCambio("EUR", nuevaMoneda)
+            _uiState.update { currentState ->
+
+                currentState.copy(
+                    ingresosDiarios = (currentState.ingresosDiarios * tasaCambio).toLong(),
+                    gastosDiarios = (currentState.gastosDiarios * tasaCambio).toLong(),
+                    ingresosMensuales = (currentState.ingresosMensuales * tasaCambio).toLong(),
+                    gastosMensuales = (currentState.gastosMensuales * tasaCambio).toLong(),
+                    ahorrosDiarios = (currentState.ahorrosDiarios * tasaCambio).toLong(),
+                    ahorrosMensuales = (currentState.ahorrosMensuales * tasaCambio).toLong(),
+                    monedaActual = nuevaMoneda
+                )
+            }
+        }
     }
 }
 

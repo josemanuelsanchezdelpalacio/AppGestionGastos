@@ -17,6 +17,7 @@ data class UiState(
     val gastosMensuales: Long = 0L,
     val ahorrosDiarios: Long = 0L,
     val ahorrosMensuales: Long = 0L,
+    val monedaActual : String = "EUR",
 
     //para transaccionScreen
     var id: String = "",
@@ -24,6 +25,7 @@ data class UiState(
     var descripcion: String = "",
     var fecha: String = "",
     var tipo: String = ""
+
 )
 
 

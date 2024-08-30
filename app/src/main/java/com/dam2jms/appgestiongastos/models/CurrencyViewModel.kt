@@ -44,4 +44,13 @@ class CurrencyViewModel: ViewModel() {
             }
         }
     }
+
+    suspend fun obtenerTasaCambio(fromCurrency: String, toCurrency: String): Double{
+        return try{
+            val rates = currencyConverter.getExchangeRates(fromCurrency)
+            rates[toCurrency]?: 1.0
+        }catch (e: Exception){
+            1.0
+        }
+    }
 }

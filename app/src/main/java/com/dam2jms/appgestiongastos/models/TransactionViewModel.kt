@@ -104,6 +104,8 @@ class TransactionViewModel : ViewModel() {
         DatePickerDialog(context, { _, selecAño, selecMes, selecDia ->
             val nuevaFecha = LocalDate.of(selecAño, selecMes + 1, selecDia)
             fechaSeleccionada(nuevaFecha)
+
+            _uiState.value = _uiState.value.copy(fecha = nuevaFecha.toString())
         }, año, mes, dia).show()
     }
 
