@@ -4,6 +4,7 @@ import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -43,11 +45,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.dam2jms.appgestiongastos.R
 import com.dam2jms.appgestiongastos.components.Components.AuthTextField
 import com.dam2jms.appgestiongastos.components.Components.fondo
 import com.dam2jms.appgestiongastos.models.LoginViewModel
@@ -95,7 +99,6 @@ fun LoginScreen(navController: NavController, mvvm: LoginViewModel){
 fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, mvvm: LoginViewModel, uiState: UiState) {
     val context = LocalContext.current
 
-
     Column(
         modifier = Modifier
             .padding(paddingValues)
@@ -104,6 +107,12 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.imagen_logo),
+            contentDescription = "icono app",
+            modifier = Modifier.size(200.dp)
+        )
+
         Text(
             text = "Bienvenido",
             style = MaterialTheme.typography.headlineMedium,

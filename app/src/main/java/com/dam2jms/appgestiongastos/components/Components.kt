@@ -2,6 +2,7 @@ package com.dam2jms.appgestiongastos.components
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -62,10 +63,12 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import com.dam2jms.appgestiongastos.R
 import com.dam2jms.appgestiongastos.ui.theme.Negro
 
 
@@ -98,6 +101,13 @@ object Components {
                     .background(Color(0xFFFFA726))
                     .padding(16.dp)
             ) {
+                Image(
+                    painter = painterResource(id = R.drawable.imagen_logo),
+                    contentDescription = "icono app",
+                    modifier = Modifier
+                        .size(120.dp)
+                        .padding(16.dp)
+                )
                 Text(
                     text = "Menú",
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
