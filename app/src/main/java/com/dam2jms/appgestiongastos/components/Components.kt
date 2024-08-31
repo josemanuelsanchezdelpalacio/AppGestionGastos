@@ -63,6 +63,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -98,16 +99,24 @@ object Components {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFFFA726))
+                    .background(NaranjaClaro)
                     .padding(16.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.imagen_logo),
-                    contentDescription = "icono app",
+                Box(
                     modifier = Modifier
-                        .size(120.dp)
-                        .padding(16.dp)
-                )
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ){
+                    Image(
+                        painter = painterResource(id = R.drawable.imagen_logo),
+                        contentDescription = "icono app",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                    )
+                }
+
                 Text(
                     text = "Menú",
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
@@ -134,7 +143,7 @@ object Components {
 
 
                 NavigationDrawerItem(
-                    label = { Text(text = "Gastos", color = Negro) },
+                    label = { Text(text = "Añadir transacciones", color = Negro) },
                     icon = { Icon(imageVector = Icons.Default.Money, contentDescription = "Gastos", tint = Negro)},
                     selected = false,
                     onClick = {
