@@ -156,11 +156,19 @@ class HomeViewModel: ViewModel() {
 
     }
 
-    fun actualizarMoneda(nuevaMoneda: String){
+    fun actualizarMoneda(nuevaMoneda: String) {
         viewModelScope.launch {
-            val tasaCambio = currencyViewModel.obtenerTasaCambio("EUR", nuevaMoneda)
-            _uiState.update { currentState ->
+            val monedaActual = _uiState.value.monedaActual
 
+            // Primero, obtenemos la tasa de cambio de la moneda actual a la nueva moneda
+            val tasaCambio = try {
+                currencyViewModel.obtenerTasaCambio(monedaActual, nuevaMoneda)
+            } catch (e: Exception) {
+                1.0 // Si hay un error, mantenemos el valor original sin convertir
+            }
+
+            // Luego, actualizamos los valores en la nueva moneda
+            _uiState.update { currentState ->
                 currentState.copy(
                     ingresosDiarios = (currentState.ingresosDiarios * tasaCambio).toLong(),
                     gastosDiarios = (currentState.gastosDiarios * tasaCambio).toLong(),
