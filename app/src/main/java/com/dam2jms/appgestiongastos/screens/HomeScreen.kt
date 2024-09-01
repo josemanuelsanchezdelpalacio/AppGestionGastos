@@ -22,14 +22,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -71,18 +77,20 @@ import com.dam2jms.appgestiongastos.ui.theme.VerdeClaro
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.TextStyle
+import java.util.Currency
 import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewModel: CurrencyViewModel) {
+fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewModel: CurrencyViewModel){
+
     val uiState by mvvm.uiState.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     val monedasDisponibles by currencyViewModel.availableCurrencies.collectAsState()
-    var seleccionMoneda by remember { mutableStateOf(uiState.monedaActual) }
+    var seleccionMoneda by remember { mutableStateOf(uiState.monedaActual)}
 
     LaunchedEffect(seleccionMoneda) {
         mvvm.actualizarMoneda(seleccionMoneda)
@@ -96,51 +104,37 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("GESTION DE GASTOS", color = Color.White, fontSize = 18.sp) },
+                    title = { Text("GESTION DE GASTOS", color = Blanco, fontSize = 18.sp) },
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch {
                                 drawerState.apply {
-                                    if (isClosed) open() else close()
+                                    if(isClosed) open() else close()
                                 }
                             }
                         }) {
-                            Icon(imageVector = Icons.Default.Menu, contentDescription = "icono menu", tint = Color.White)
+                            Icon(imageVector = Icons.Default.Menu, contentDescription = "icono menu", tint = Blanco)
                         }
                     },
                     actions = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "atras", tint = Color.White)
+                        IconButton(onClick = { navController.navigate(AppScreen.HomeScreen.route) }) {
+                            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "atras", tint = Blanco)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = NaranjaOscuro)
                 )
-            },
-            content = { paddingValues ->
-                HomeScreenBody(
-                    paddingValues = paddingValues,
-                    uiState = uiState,
-                    availableCurrencies = monedasDisponibles,
-                    selectedCurrency = seleccionMoneda,
-                    onCurrencySelected = { seleccionMoneda = it },
-                    currencyViewModel = currencyViewModel
-                )
             }
-        )
+        ){ paddingValues ->
+            HomeScreenBody(paddingValues = paddingValues, uiState = uiState, availableCurrencies = monedasDisponibles, selectedCurrency = seleccionMoneda, onCurrencySelected = { seleccionMoneda = it }, currencyViewModel = currencyViewModel)
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreenBody(
-    paddingValues: PaddingValues,
-    uiState: UiState,
-    availableCurrencies: List<String>,
-    selectedCurrency: String,
-    onCurrencySelected: (String) -> Unit,
-    currencyViewModel: CurrencyViewModel
-) {
+fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurrencies: List<String>, selectedCurrency: String, onCurrencySelected: (String) -> Unit, currencyViewModel: CurrencyViewModel){
+
     val conversionResult by currencyViewModel.conversionResult.collectAsState()
     val currencySymbol = currencyViewModel.getCurrencySymbol(selectedCurrency)
 
@@ -169,33 +163,34 @@ fun HomeScreenBody(
     ) {
         item {
             Text(
-                "Selecciona una moneda para ver tus finanzas:",
+                text = "Selecciona una moneda para el cambio",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
             )
+
             Spacer(modifier = Modifier.height(4.dp))
 
-            var isExpanded by remember { mutableStateOf(false) }
+            var isExpanded by remember { mutableStateOf(false)}
             ExposedDropdownMenuBox(
                 expanded = isExpanded,
-                onExpandedChange = { isExpanded = it }
+                onExpandedChange = { isExpanded = it}
             ) {
                 OutlinedTextField(
-                    value = selectedCurrency,
+                    value = currencyViewModel.getCurrencyFullName(selectedCurrency),
                     onValueChange = {},
                     readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)},
                     modifier = Modifier
                         .menuAnchor()
-                        .width(200.dp)
+                        .fillMaxSize()
                 )
                 ExposedDropdownMenu(
                     expanded = isExpanded,
-                    onDismissRequest = { isExpanded = false }
+                    onDismissRequest = { isExpanded = false}
                 ) {
                     availableCurrencies.forEach { currency ->
                         DropdownMenuItem(
-                            text = { Text(currency, fontSize = 14.sp) },
+                            text = { Text(currencyViewModel.getCurrencyFullName(currency), fontSize = 14.sp) },
                             onClick = {
                                 onCurrencySelected(currency)
                                 isExpanded = false
@@ -234,8 +229,6 @@ fun HomeScreenBody(
     }
 }
 
-
-/**muestra un grafico circular con los gastos e ingresos */
 @Composable
 fun graficoCircularConInfo(gastos: Float, ingresos: Float, moneda: String) {
     val total = gastos + ingresos
@@ -310,12 +303,9 @@ fun graficoCircularConInfo(gastos: Float, ingresos: Float, moneda: String) {
     }
 }
 
-/** muestra informacion dentro de una caja sobre la cantidad ahorrada por el usuario en el ultimo mes y ultimo año*/
 @Composable
 @RequiresApi(Build.VERSION_CODES.O)
 fun cajaAhorros(ahorrosDiarios: Long, ahorrosMensuales: Long, moneda: String){
-
-    //obtengo el mes actual a tiempo real
     val mesActual = LocalDate.now().month.getDisplayName(TextStyle.FULL, Locale("es"))
 
     Box(
@@ -324,7 +314,6 @@ fun cajaAhorros(ahorrosDiarios: Long, ahorrosMensuales: Long, moneda: String){
             .background(NaranjaOscuro, shape = RoundedCornerShape(8.dp))
             .padding(20.dp)
     ){
-        //cajas para el ahorro (porcentaje restante entre los gastos e ingresos) mensual y anual
         Column {
             Text(text = "AHORROS", color = Blanco, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
@@ -332,48 +321,37 @@ fun cajaAhorros(ahorrosDiarios: Long, ahorrosMensuales: Long, moneda: String){
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)){
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = "Ahorro diario", color = Blanco, fontWeight = FontWeight.Bold)
-                    Text(text = String.format("%.2f €", ahorrosDiarios.toDouble(), moneda), color = Blanco)
+                    Text(text = String.format("%.2f %s", ahorrosDiarios.toDouble(), moneda), color = Blanco)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = "Ahorro mensual (${mesActual.capitalize()})", color = Blanco, fontWeight = FontWeight.Bold)
-                    Text(text = String.format("%.2f €", ahorrosMensuales.toDouble(), moneda), color = Blanco)
+                    Text(text = String.format("%.2f %s", ahorrosMensuales.toDouble(), moneda), color = Blanco)
                 }
             }
-
         }
     }
 }
 
-
-/**lo mismo que el anterior pero para mostrar ingresos/gastos anuales y mensuales*/
 @Composable
-fun cajaFinanzasFijas(ingresosDiarios: Long, ingresosMensuales: Long, gastosDiarios: Long, gastosMensuales: Long, moneda: String){
-
+fun cajaFinanzasFijas(ingresosDiarios: Long, ingresosMensuales: Long, gastosDiarios: Long, gastosMensuales: Long, moneda: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(NaranjaClaro, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
-
-        //cajas para los ingresos y gastos mensuales y anuales
         Column {
-            Text(
-                "INGRESOS Y GASTOS",
-                color = Blanco,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
-            )
+            Text("INGRESOS Y GASTOS", color = Blanco, fontWeight = FontWeight.Bold, fontSize = 20.sp)
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Ingresos diarios", color = Blanco, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text(String.format("%.2f €", ingresosDiarios.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
+                    Text(String.format("%.2f %s", ingresosDiarios.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Ingresos mensuales", color = Blanco, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text(String.format("%.2f €", ingresosMensuales.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
+                    Text(String.format("%.2f %s", ingresosMensuales.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
                 }
             }
 
@@ -382,11 +360,11 @@ fun cajaFinanzasFijas(ingresosDiarios: Long, ingresosMensuales: Long, gastosDiar
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Gastos diarios", color = Blanco, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text(String.format("%.2f €", gastosDiarios.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
+                    Text(String.format("%.2f %s", gastosDiarios.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Gastos mensuales", color = Blanco, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text(String.format("%.2f €", gastosMensuales.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
+                    Text(String.format("%.2f %s", gastosDiarios.toDouble(), moneda), color = Blanco, fontSize = 16.sp)
                 }
             }
         }

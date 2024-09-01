@@ -7,6 +7,8 @@ import com.dam2jms.appgestiongastos.data.CurrencyConverter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.Currency
+import java.util.Locale
 
 class CurrencyViewModel : ViewModel() {
 
@@ -47,7 +49,21 @@ class CurrencyViewModel : ViewModel() {
     }
 
     fun getCurrencySymbol(currencyCode: String): String {
-        return java.util.Currency.getInstance(currencyCode).symbol
+        return try{
+            Currency.getInstance(currencyCode).symbol
+        }catch (e: IllegalArgumentException) {
+            currencyCode
+        }
+    }
+
+    fun getCurrencyFullName(currencyCode: String): String{
+        return try{
+            val currency = Currency.getInstance(currencyCode)
+            val displayName = currency.getDisplayName(Locale.getDefault())
+            "$displayName ($currencyCode)"
+        }catch (e: IllegalArgumentException) {
+            currencyCode
+        }
     }
 
     // Función para obtener la tasa de cambio entre dos monedas
