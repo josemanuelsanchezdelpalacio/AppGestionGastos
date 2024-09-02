@@ -223,7 +223,6 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
             }
         }
 
-
         Button(
             onClick = {
                 val cantidadValida = validarCantidad(context, uiState.cantidad)

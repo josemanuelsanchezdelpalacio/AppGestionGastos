@@ -279,3 +279,4 @@ fun TransactionItem(transaccion: Transaccion){
         }
     }
 }
+

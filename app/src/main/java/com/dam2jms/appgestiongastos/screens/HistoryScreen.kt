@@ -208,3 +208,4 @@ fun HistoryScreenBody(paddingValues: PaddingValues, mvvm: TransactionViewModel, 
         }
     }
 }
+

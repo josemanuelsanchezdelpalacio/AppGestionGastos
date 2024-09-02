@@ -27,5 +27,4 @@ abstract class AuthViewModel: ViewModel(){
     fun visibilidadContraseña(){
         _uiState.value = _uiState.value.copy(visibilidadPassword = !uiState.value.visibilidadPassword)
     }
-
 }

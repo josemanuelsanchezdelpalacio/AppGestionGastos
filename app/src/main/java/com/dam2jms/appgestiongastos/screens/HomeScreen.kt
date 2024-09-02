@@ -96,6 +96,7 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
         mvvm.actualizarMoneda(seleccionMoneda)
     }
 
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen,

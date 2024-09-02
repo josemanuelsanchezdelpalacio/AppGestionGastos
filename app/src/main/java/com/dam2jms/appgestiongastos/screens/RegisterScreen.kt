@@ -64,7 +64,6 @@ fun RegisterScreen(navController: NavController, mvvm: RegisterViewModel){
 
     val uiState by mvvm.uiState.collectAsState()
 
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(

@@ -209,6 +209,7 @@ object Components {
         )
     }
 
+
     /**metodo para reutilizar el componente de radioButton
      * Utilizado en las clases TransactionScreen, AddTransactionScreen e HistoryScreen*/
     @Composable

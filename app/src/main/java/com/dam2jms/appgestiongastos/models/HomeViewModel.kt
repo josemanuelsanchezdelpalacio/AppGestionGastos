@@ -64,7 +64,6 @@ class HomeViewModel: ViewModel() {
         leerTransacciones()
     }
 
-
     /** calculo y actualizo la rueda de balance a partir de los ingresos y gastos del usuario
      *
      * calculo el total de ingresos y gastos y luego calculo los ahorros con la diferencia entre esos datos

@@ -68,6 +68,7 @@ class AddTransactionViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
+
     /**
      * Actualiza el estado del UI con la cantidad, descripción y tipo de transacción proporcionados.
      *

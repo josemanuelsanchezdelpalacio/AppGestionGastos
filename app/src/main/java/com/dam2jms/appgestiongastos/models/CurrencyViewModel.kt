@@ -86,4 +86,3 @@ class CurrencyViewModel : ViewModel() {
         } catch (e: Exception) { 1.0 } //devuelve 1.0 en caso de error
     }
 }
-
