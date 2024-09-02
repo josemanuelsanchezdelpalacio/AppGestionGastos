@@ -1,5 +1,8 @@
 package com.dam2jms.appgestiongastos.models
 
+import android.app.Application
+import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -12,67 +15,75 @@ import java.util.Locale
 
 class CurrencyViewModel : ViewModel() {
 
-    private val currencyConverter = CurrencyConverter()
+    private val monedaConvertida = CurrencyConverter()
 
-    private val _conversionResult = MutableStateFlow<Map<String, Double>>(emptyMap())
-    val conversionResult: StateFlow<Map<String, Double>> = _conversionResult
+    //estado para almacenar el resultado de la conversion de monedas
+    private val _resultadoConversion = MutableStateFlow<Map<String, Double>>(emptyMap())
+    val resultadoConversion: StateFlow<Map<String, Double>> = _resultadoConversion
 
-    private val _availableCurrencies = MutableStateFlow<List<String>>(emptyList())
-    val availableCurrencies: StateFlow<List<String>> = _availableCurrencies
+    //estado para almacenar la lista de monedas disponibles
+    private val _monedasDisponibles = MutableStateFlow<List<String>>(emptyList())
+    val monedasDisponibles: StateFlow<List<String>> = _monedasDisponibles
 
+    //inicianliza la lista de monedas
     init {
-        fetchAvailableCurrencies()
+        obtenerMonedasDisponibles()
     }
 
-    private fun fetchAvailableCurrencies() {
+    /**metodo para obtener la lista de monedas disponibles
+     * @param tasas obtiene las tasas de cambio para el euro y actualiza de monedas disponibles
+     * */
+    private fun obtenerMonedasDisponibles() {
         viewModelScope.launch {
             try {
-                val rates = currencyConverter.getExchangeRates("EUR")
-                _availableCurrencies.value = rates.keys.toList()
-            } catch (e: Exception) {
-                // Manejo de errores
-            }
+                val rates = monedaConvertida.obtenerTasasCambio("EUR")
+                _monedasDisponibles.value = rates.keys.toList()
+            } catch (e: Exception) { }
         }
     }
 
-    fun convertAllCurrencies(amounts: Map<String, Double>, fromCurrency: String, toCurrency: String) {
+    /**metodo para convertir monedas entre diferentes tipos de cambio
+     * @param resultado convierte cada cantidad con la tasa de cambio */
+    fun convertirMonedas(cantidades: Map<String, Double>, fromCurrency: String, toCurrency: String) {
         viewModelScope.launch {
             try {
-                val result = amounts.mapValues { (type, amount) ->
-                    currencyConverter.convertCurrency(amount, fromCurrency, toCurrency)
+                val resultado = cantidades.mapValues { (tipo, cantidad) ->
+                    monedaConvertida.convertirMoneda(cantidad, fromCurrency, toCurrency)
                 }
-                _conversionResult.value = result
-            } catch (e: Exception) {
-                // Manejo de errores
-            }
+                _resultadoConversion.value = resultado
+            } catch (e: Exception) {}
         }
     }
 
-    fun getCurrencySymbol(currencyCode: String): String {
+    /** metodo para obtener el simbolo de las monedas*/
+    fun obtenerSimboloMoneda(codigoMoneda: String): String {
         return try{
-            Currency.getInstance(currencyCode).symbol
+            Currency.getInstance(codigoMoneda).symbol
         }catch (e: IllegalArgumentException) {
-            currencyCode
+            codigoMoneda
         }
     }
 
-    fun getCurrencyFullName(currencyCode: String): String{
+    /**metodo para obtener el nombre completo de cada moneda*/
+    fun obtenerNombreCompleto(codigoMoneda: String): String{
         return try{
-            val currency = Currency.getInstance(currencyCode)
-            val displayName = currency.getDisplayName(Locale.getDefault())
-            "$displayName ($currencyCode)"
+            val moneda = Currency.getInstance(codigoMoneda)
+            val nombre = moneda.getDisplayName(Locale.getDefault())
+            "$nombre ($codigoMoneda)"
         }catch (e: IllegalArgumentException) {
-            currencyCode
+            codigoMoneda
         }
     }
 
-    // Función para obtener la tasa de cambio entre dos monedas
+    /** metodo para obtener la tasa de cambio entre dos monedas
+     * @param tasas obtengo las tasas de cambio para la moneda de origen
+     * @return la tasa de cambio entra la moneda origen y la moneda convertida*/
     suspend fun obtenerTasaCambio(fromCurrency: String, toCurrency: String): Double {
         return try {
-            val rates = currencyConverter.getExchangeRates(fromCurrency)
-            rates[toCurrency] ?: 1.0  // Devuelve 1.0 si la tasa no se encuentra
-        } catch (e: Exception) {
-            1.0  // Devuelve 1.0 en caso de error
-        }
+            val rates = monedaConvertida.obtenerTasasCambio(fromCurrency)
+            //devuelve 1.0 si la tasa no se encuentra
+            rates[toCurrency] ?: 1.0
+        } catch (e: Exception) { 1.0 } //devuelve 1.0 en caso de error
     }
 }
+

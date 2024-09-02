@@ -1,9 +1,11 @@
 package com.dam2jms.appgestiongastos.screens
 
 import android.app.Activity
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,17 +54,22 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.R
+import com.dam2jms.appgestiongastos.components.Components
 import com.dam2jms.appgestiongastos.components.Components.AuthTextField
-import com.dam2jms.appgestiongastos.components.Components.fondo
+import com.dam2jms.appgestiongastos.components.Components.fondoPantalla
 import com.dam2jms.appgestiongastos.models.LoginViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaClaro
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaOscuro
+import com.dam2jms.appgestiongastos.utils.Validaciones
+import com.dam2jms.appgestiongastos.utils.Validaciones.validaContraseña
+import com.dam2jms.appgestiongastos.utils.Validaciones.validarCorreo
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, mvvm: LoginViewModel){
@@ -88,12 +95,13 @@ fun LoginScreen(navController: NavController, mvvm: LoginViewModel){
         paddingValues ->
 
         //llamo al componente para el diseño del fondo
-        fondo {
+        fondoPantalla {
             LoginScreenBody(paddingValues = paddingValues, navController = navController, mvvm = mvvm, uiState = uiState)
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, mvvm: LoginViewModel, uiState: UiState) {
@@ -147,7 +155,7 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
 
         Button(
             onClick = {
-                if (uiState.email.isNotEmpty() && uiState.password.isNotEmpty() && mvvm.validarCorreo(context, uiState.email) && mvvm.validaContraseña(context, uiState.password)) {
+                if (uiState.email.isNotEmpty() && uiState.password.isNotEmpty() && validarCorreo(context, uiState.email) && validaContraseña(context, uiState.password)) {
                     mvvm.iniciarSesion(uiState.email, uiState.password, context)
                     navController.navigate(AppScreen.HomeScreen.route)
                 } else {
@@ -185,7 +193,7 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
             text = "¿Olvidaste tu contraseña?",
             color = Blanco,
             modifier = Modifier.clickable {
-                if (uiState.email.isNotEmpty() && mvvm.validarCorreo(context, uiState.email)) {
+                if (uiState.email.isNotEmpty() && validarCorreo(context, uiState.email)) {
                     mvvm.recuperarContraseña(uiState.email, context)
                 } else {
                     Toast.makeText(context, "Ingrese un correo electrónico válido", Toast.LENGTH_SHORT).show()

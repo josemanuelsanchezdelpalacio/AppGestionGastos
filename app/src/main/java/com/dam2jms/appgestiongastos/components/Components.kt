@@ -70,29 +70,32 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import com.dam2jms.appgestiongastos.R
+import com.dam2jms.appgestiongastos.ui.theme.NaranjaOscuro
 import com.dam2jms.appgestiongastos.ui.theme.Negro
 
-
+@RequiresApi(Build.VERSION_CODES.O)
 object Components {
 
+    /**metodo con el fondo para las pantallas LoginScreen y HomeScreen**/
     @Composable
-    fun fondo(content: @Composable() (BoxScope.() -> Unit)){
+    fun fondoPantalla(contenido: @Composable() (BoxScope.() -> Unit)){
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
+                    //creo un gradiente naranja claro y oscuro
                     brush = Brush.verticalGradient(
-                        colors = listOf(Color(0xFFFFA726), Color(0xFFD35400)),
+                        colors = listOf(NaranjaClaro, NaranjaOscuro),
                         startY = 0f,
                         endY = Float.POSITIVE_INFINITY
                     )
                 ),
-            content = content
+            content = contenido
         )
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /**metodo para reutilizar el menu*/
     @Composable
     fun menu(navController: NavController) {
         ModalDrawerSheet {
@@ -131,9 +134,7 @@ object Components {
                     label = { Text(text = "Volver al inicio", color = Negro) },
                     icon = { Icon(imageVector = Icons.Default.Home, contentDescription = "Inicio", tint = Negro)},
                     selected = false,
-                    onClick = {
-                        navController.navigate(AppScreen.HomeScreen.route)
-                    },
+                    onClick = { navController.navigate(AppScreen.HomeScreen.route) },
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
@@ -161,65 +162,22 @@ object Components {
                     label = { Text(text = "Historial de transacciones", color = Color.Black) },
                     icon = { Icon(imageVector = Icons.Default.History, contentDescription = "Gastos", tint = Negro)},
                     selected = false,
-                    onClick = {
-                        navController.navigate(AppScreen.HistoryScreen.route)
-                    },
+                    onClick = { navController.navigate(AppScreen.HistoryScreen.route) },
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Divider(color = Blanco)
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /** metodo para reutilizar Textfield
+     * Usado para las clases LoginScreen, HomeScreen
+     * @param isPasswordVisible indica si la contraseña es visible
+     * */
     @Composable
-    fun horizontalCalendar(fechaSeleccionada: LocalDate, onDateSelected: (LocalDate) -> Unit) {
-
-        val fechas = remember{
-            (0..30).map { LocalDate.now().minusDays(it.toLong()) }
-        }
-
-        LazyRow(
-            modifier = Modifier.padding(vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(fechas) { fecha ->
-                val seleccionada = fecha == fechaSeleccionada
-                val background = if(seleccionada) MaterialTheme.colorScheme.primary else Color.Transparent
-                val textColor = if(seleccionada) Blanco else MaterialTheme.colorScheme.onBackground
-
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(background, shape = CircleShape)
-                        .border(1.dp, if (seleccionada) Blanco else Gris, shape = CircleShape)
-                        .clickable { onDateSelected(fecha) },
-                    contentAlignment = Alignment.Center
-                ){
-                    Text(
-                        text = fecha.dayOfMonth.toString(),
-                        color = textColor,
-                        fontWeight = if(seleccionada) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
-            }
-        }
-    }
-
-    @Composable
-    fun AuthTextField(
-        label: String,
-        text: String,
-        onTextChange: (String) -> Unit,
-        isPasswordField: Boolean = false,
-        isPasswordVisible: Boolean = false,
-        onPasswordVisibilityChange: (() -> Unit)? = null,
-        leadingIcon: @Composable (() -> Unit)? = null,
-        modifier: Modifier = Modifier
-    ) {
+    fun AuthTextField(label: String, text: String, onTextChange: (String) -> Unit, isPasswordField: Boolean = false, isPasswordVisible: Boolean = false, onPasswordVisibilityChange: (() -> Unit)? = null, leadingIcon: @Composable (() -> Unit)? = null, modifier: Modifier) {
 
         var passwordVisible by remember { mutableStateOf(isPasswordVisible) }
 
@@ -227,18 +185,21 @@ object Components {
             value = text,
             onValueChange = onTextChange,
             label = { Text(text = label) },
+            //para que solo pueda escribir en una linea
             singleLine = true,
             modifier = modifier,
+            //para que la contraseña salga tapado con simbolos *
             visualTransformation = if (isPasswordField && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
             leadingIcon = leadingIcon,
-            trailingIcon = if (isPasswordField) {
+            trailingIcon =
+            if (isPasswordField) {
                 {
                     val icon = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
                     IconButton(onClick = {
                         passwordVisible = !passwordVisible
                         onPasswordVisibilityChange?.invoke()
                     }) {
-                        Icon(imageVector = icon, contentDescription = if (passwordVisible) "Hide password" else "Show password")
+                        Icon(imageVector = icon, contentDescription = if (passwordVisible) "contraseña escondida" else "contraseña mostrada")
                     }
                 }
             } else null,
@@ -248,24 +209,25 @@ object Components {
         )
     }
 
+    /**metodo para reutilizar el componente de radioButton
+     * Utilizado en las clases TransactionScreen, AddTransactionScreen e HistoryScreen*/
     @Composable
-    fun RadioButtonWithLabel(selected: Boolean, onClick: () -> Unit, label: String) {
+    fun AuthRadioButton(seleccion: Boolean, onClick: () -> Unit, label: String) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable(onClick = onClick)
         ) {
             RadioButton(
-                selected = selected,
+                selected = seleccion,
                 onClick = null,
                 colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (selected) NaranjaClaro else Color.Black,
+                color = if (seleccion) NaranjaClaro else Color.Black,
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
     }
-
 }

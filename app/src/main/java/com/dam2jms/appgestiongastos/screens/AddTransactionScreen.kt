@@ -63,6 +63,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,16 +79,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.dam2jms.appgestiongastos.components.Components.RadioButtonWithLabel
+import com.dam2jms.appgestiongastos.components.Components
+import com.dam2jms.appgestiongastos.components.Components.AuthRadioButton
 import com.dam2jms.appgestiongastos.data.Categoria
 import com.dam2jms.appgestiongastos.components.Components.menu
-import com.dam2jms.appgestiongastos.models.CategoryViewModel
+import com.dam2jms.appgestiongastos.data.CategoriaAPI.obtenerCategorias
+import com.dam2jms.appgestiongastos.data.CurrencyConverter
+import com.dam2jms.appgestiongastos.models.AddTransactionViewModel
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
 import com.dam2jms.appgestiongastos.states.Transaccion
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaClaro
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaOscuro
+import com.dam2jms.appgestiongastos.utils.Validaciones.validarCantidad
+import com.dam2jms.appgestiongastos.utils.Validaciones.validarDescripcion
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -95,7 +101,7 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTransactionScreen(navController: NavController, mvvm: TransactionViewModel, categoryViewModel: CategoryViewModel) {
+fun AddTransactionScreen(navController: NavController, mvvm: AddTransactionViewModel) {
 
     val uiState by mvvm.uiState.collectAsState()
 
@@ -137,16 +143,22 @@ fun AddTransactionScreen(navController: NavController, mvvm: TransactionViewMode
                 )
             }
         ) { paddingValues ->
-            AddTransactionScreenBody(paddingValues = paddingValues, uiState = uiState, navController = navController, mvvm = mvvm, context = context, categoryViewModel = categoryViewModel)
+            AddTransactionScreenBody(paddingValues = paddingValues, uiState = uiState, navController = navController, mvvm = mvvm, context = context)
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, navController: NavController, mvvm: TransactionViewModel, context: Context, categoryViewModel: CategoryViewModel) {
+fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, navController: NavController, mvvm: AddTransactionViewModel, context: Context) {
 
-    val categorias by categoryViewModel.categories.collectAsState()
+    var categorias by remember { mutableStateOf<List<Categoria>>(emptyList()) }
+
+    LaunchedEffect(uiState.tipo) {
+        if(uiState.tipo.isNotEmpty()){
+            categorias = obtenerCategorias(uiState.tipo)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -176,20 +188,18 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            RadioButtonWithLabel(
-                selected = uiState.tipo == "ingreso",
+            AuthRadioButton(
+                seleccion = uiState.tipo == "ingreso",
                 onClick = {
                     mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.descripcion, "ingreso")
-                    categoryViewModel.obtenerCategorias("ingreso")
                 },
                 label = "Ingreso"
             )
 
-            RadioButtonWithLabel(
-                selected = uiState.tipo == "gasto",
+            AuthRadioButton(
+                seleccion = uiState.tipo == "gasto",
                 onClick = {
                     mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.descripcion, "gasto")
-                    categoryViewModel.obtenerCategorias("gasto")
                 },
                 label = "Gasto"
             )
@@ -203,7 +213,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(categorias) { categoria ->
-                    CategoriaItem(
+                    mvvm.categoriaItem(
                         categoria = categoria,
                         onClick = {
                             mvvm.actualizarDatosTransaccion(uiState.cantidad, categoria.nombre, uiState.tipo)
@@ -216,8 +226,8 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
 
         Button(
             onClick = {
-                val cantidadValida = mvvm.validarCantidad(context, uiState.cantidad)
-                val descripcionValida = mvvm.validarDescripcion(context, uiState.descripcion)
+                val cantidadValida = validarCantidad(context, uiState.cantidad)
+                val descripcionValida = validarDescripcion(context, uiState.descripcion)
                 val tipoSeleccionado = uiState.tipo.isNotEmpty()
 
                 if (!tipoSeleccionado) {
@@ -256,50 +266,4 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
             )
         }
     }
-}
-
-@Composable
-fun CategoriaItem(categoria: Categoria, onClick: () -> Unit){
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ){
-            Icon(
-                imageVector = getCategoryIcon(categoria.nombre),
-                contentDescription = categoria.nombre,
-                tint = NaranjaClaro,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(text = categoria.nombre, style = MaterialTheme.typography.bodyLarge)
-        }
-    }
-}
-
-@Composable
-fun getCategoryIcon(categoria: String): ImageVector{
-
-    return when (categoria.toLowerCase()){
-        "salario" -> Icons.Default.Money
-        "casa" -> Icons.Default.Home
-        "ropa" -> Icons.Default.ShoppingBag
-        "educacion" -> Icons.Default.School
-        "entretenimiento" -> Icons.Default.Movie
-        "regalo" -> Icons.Default.CardGiftcard
-        "mascota" -> Icons.Default.Pets
-        "viajes" -> Icons.Default.Flight
-        else -> Icons.Default.Category
-    }
-
 }

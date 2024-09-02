@@ -25,5 +25,4 @@ class RegisterViewModel: AuthViewModel(){
                }
            }
     }
-
 }

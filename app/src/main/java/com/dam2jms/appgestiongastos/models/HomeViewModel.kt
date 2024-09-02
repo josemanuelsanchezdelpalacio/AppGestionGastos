@@ -52,12 +52,14 @@ import java.util.Locale
 @RequiresApi(Build.VERSION_CODES.O)
 class HomeViewModel: ViewModel() {
 
+    //estado que se actualizara con datos de ingresos y gastos
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private val db = Firebase.firestore
     private val currencyViewModel = CurrencyViewModel()
 
+    //inicializa la lectura de transacciones
     init {
         leerTransacciones()
     }
@@ -67,8 +69,11 @@ class HomeViewModel: ViewModel() {
      *
      * calculo el total de ingresos y gastos y luego calculo los ahorros con la diferencia entre esos datos
      * actualizo el estado del UI con los valores de ingresos mensuales, gastos mensuales y ahorros
+     * @param ahorrosDiarios filtra y suma los ingresos y gastos del dia de hoy
+     * @param primerDiaDelMes calcula el primer dia del mes para filtrar ingresos y gastos
+     * @param ahorrosMensuales filtra y suma los ingresos y gastos desde el primer dia
+     *
      * */
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun actualizacionBalance() {
 
         val hoy = LocalDate.now()
@@ -96,6 +101,7 @@ class HomeViewModel: ViewModel() {
 
         val ahorrosMensuales = ingresosMensuales - gastosMensuales
 
+        //actualiza el estado de la UI con los nuevos valores
         _uiState.update { currentUiState ->
             currentUiState.copy(
                 ingresosDiarios = ingresosDiarios.toLong(),
@@ -106,21 +112,19 @@ class HomeViewModel: ViewModel() {
                 ahorrosMensuales = ahorrosMensuales.toLong()
             )
         }
-
     }
-
-
 
     /**muestra las colecciones de ingresos y gastos en firesotore
      *
      * obtengo el ID del usuario actual y leo sus datos en las colecciones "Ingresos" y "gastos"
      * actualizo el UI cada vez que hay un cambio en estas colecciones
+     * @param IDUsuario obtiene el ID del usuario actual
      * */
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun leerTransacciones(){
 
         val IDusuario = Firebase.auth.currentUser?.uid?: return
 
+        //lee cambios en la coleccion de ingresos
         db.collection("users")
             .document(IDusuario)
             .collection("ingresos")
@@ -129,14 +133,19 @@ class HomeViewModel: ViewModel() {
                     return@addSnapshotListener
                 }
 
+                //mapea los documentos a objetos Transaccion
                 val ingresos = snapshots?.documents?.mapNotNull {
                     it.toObject(Transaccion::class.java)
                 }?: emptyList()
+
+                //actualiza el estado de la UI con los ingresos leidos
                 _uiState.update { it.copy(ingresos = ingresos) }
+                //recalcula el balance
                 actualizacionBalance()
             }
 
 
+        //hace lo mismo que lo anterior pero leyendo gastos
         db.collection("users")
             .document(IDusuario)
             .collection("gastos")
@@ -151,23 +160,22 @@ class HomeViewModel: ViewModel() {
                 _uiState.update { it.copy(gastos = gastos) }
                 actualizacionBalance()
             }
-
-
-
     }
 
+    /** metodo que actualiza la moneda en la UI a una nueva moneda
+     * @param nuevaMoneda a la que se deben convertir los valores
+     * */
     fun actualizarMoneda(nuevaMoneda: String) {
         viewModelScope.launch {
             val monedaActual = _uiState.value.monedaActual
 
-            // Primero, obtenemos la tasa de cambio de la moneda actual a la nueva moneda
+            //obtengo la tasa de cambio de la moneda actual a la nueva moneda
             val tasaCambio = try {
                 currencyViewModel.obtenerTasaCambio(monedaActual, nuevaMoneda)
-            } catch (e: Exception) {
-                1.0 // Si hay un error, mantenemos el valor original sin convertir
-            }
+                //si hay un error, mantenemos el valor original sin convertir
+            } catch (e: Exception) { 1.0 }
 
-            // Luego, actualizamos los valores en la nueva moneda
+            //actualizo los valores en la nueva moneda
             _uiState.update { currentState ->
                 currentState.copy(
                     ingresosDiarios = (currentState.ingresosDiarios * tasaCambio).toLong(),

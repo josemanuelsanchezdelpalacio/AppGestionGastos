@@ -47,7 +47,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.dam2jms.appgestiongastos.components.Components.RadioButtonWithLabel
+import com.dam2jms.appgestiongastos.components.Components
+import com.dam2jms.appgestiongastos.components.Components.AuthRadioButton
+import com.dam2jms.appgestiongastos.components.Components.AuthTextField
 import com.dam2jms.appgestiongastos.components.Components.menu
 import com.dam2jms.appgestiongastos.models.HomeViewModel
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
@@ -132,20 +134,20 @@ fun HistoryScreenBody(paddingValues: PaddingValues, mvvm: TransactionViewModel, 
                 .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ){
-            RadioButtonWithLabel(
-                selected = tipoSeleccionado == "ingreso",
+            AuthRadioButton(
+                seleccion = tipoSeleccionado == "ingreso",
                 onClick = { tipoSeleccionado = "ingreso" },
                 label = "Ingresos"
             )
 
-            RadioButtonWithLabel(
-                selected = tipoSeleccionado == "gasto",
+            AuthRadioButton(
+                seleccion = tipoSeleccionado == "gasto",
                 onClick = { tipoSeleccionado = "gasto" },
                 label = "Gastos"
             )
 
-            RadioButtonWithLabel(
-                selected = tipoSeleccionado == null,
+            AuthRadioButton(
+                seleccion = tipoSeleccionado == null,
                 onClick = { tipoSeleccionado = null },
                 label = "Todos"
             )

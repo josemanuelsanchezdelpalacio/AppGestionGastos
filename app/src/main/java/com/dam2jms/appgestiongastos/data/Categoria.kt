@@ -9,10 +9,15 @@ import retrofit2.http.GET
 
 data class Categoria(val id: String, val nombre: String, var tipo: String)
 
+/** Simula una API para obtener categorias de ingresos y gastos*/
 object CategoriaAPI {
 
+    /**metodo que obtiene una lista de categorias segun el tipo (ingreso o gasto)
+     * @param tipo Tipo de categoria a obtener. Puede ser ingreso o gasto
+     * @return Lista de categorias segun el tipo
+     * */
     suspend fun obtenerCategorias(tipo: String): List<Categoria> = withContext(Dispatchers.IO) {
-        when(tipo){
+        when(tipo) {
             "ingreso" -> listOf(
                 Categoria(id = "1", nombre = "reembolso", tipo = "ingreso"),
                 Categoria(id = "2", nombre = "salario", tipo = "ingreso"),
@@ -32,5 +37,4 @@ object CategoriaAPI {
             else -> emptyList()
         }
     }
-
 }

@@ -60,7 +60,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.dam2jms.appgestiongastos.components.Components.horizontalCalendar
 import com.dam2jms.appgestiongastos.components.Components.menu
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
@@ -142,7 +141,7 @@ fun TransactionScreen(navController: NavController, mvvm: TransactionViewModel, 
                 )
             }
         ){ paddingValues ->
-            TransactionsScreenBody(paddingValues = paddingValues, navController = navController, uiState = uiState, seleccionarFecha = fecha.toString(), displayType = displayType, onDisplayTypeChange = { displayType = it })
+            TransactionsScreenBody(paddingValues = paddingValues, navController = navController, mvvm = TransactionViewModel(), uiState = uiState, seleccionarFecha = fecha.toString(), displayType = displayType, onDisplayTypeChange = { displayType = it })
         }
     }
 }
@@ -150,7 +149,7 @@ fun TransactionScreen(navController: NavController, mvvm: TransactionViewModel, 
 
 @Composable
 @RequiresApi(Build.VERSION_CODES.O)
-fun TransactionsScreenBody(paddingValues: PaddingValues, navController: NavController, uiState: UiState, seleccionarFecha: String, displayType: String, onDisplayTypeChange: (String) -> Unit) {
+fun TransactionsScreenBody(paddingValues: PaddingValues, navController: NavController, mvvm: TransactionViewModel, uiState: UiState, seleccionarFecha: String, displayType: String, onDisplayTypeChange: (String) -> Unit) {
 
     val fechaSeleccionada = LocalDate.parse(seleccionarFecha)
 
@@ -177,7 +176,7 @@ fun TransactionsScreenBody(paddingValues: PaddingValues, navController: NavContr
             fontSize = 24.sp
         )
 
-        horizontalCalendar(
+        mvvm.horizontalCalendar(
             fechaSeleccionada = fechaSeleccionada,
             onDateSelected = { fecha ->
                 val nuevaFechaSelec = fecha.format(DateTimeFormatter.ISO_DATE)

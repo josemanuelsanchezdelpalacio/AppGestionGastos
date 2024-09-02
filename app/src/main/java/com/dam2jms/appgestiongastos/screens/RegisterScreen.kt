@@ -1,6 +1,8 @@
 package com.dam2jms.appgestiongastos.screens
 
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,15 +45,19 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.components.Components
 import com.dam2jms.appgestiongastos.components.Components.AuthTextField
-import com.dam2jms.appgestiongastos.components.Components.fondo
+import com.dam2jms.appgestiongastos.components.Components.fondoPantalla
 import com.dam2jms.appgestiongastos.models.RegisterViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaClaro
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaOscuro
+import com.dam2jms.appgestiongastos.utils.Validaciones
+import com.dam2jms.appgestiongastos.utils.Validaciones.validaContraseña
+import com.dam2jms.appgestiongastos.utils.Validaciones.validarCorreo
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController, mvvm: RegisterViewModel){
@@ -79,12 +85,13 @@ fun RegisterScreen(navController: NavController, mvvm: RegisterViewModel){
         paddingValues ->
 
         //llamo al componente para el diseño del fondo
-        fondo {
+        fondoPantalla {
             RegisterBodyScreen(paddingValues = paddingValues, navController = navController, mvvm = mvvm, uiState = uiState)
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavController, mvvm: RegisterViewModel, uiState: UiState){
 
@@ -126,7 +133,7 @@ fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavControlle
 
         Button(
             onClick = {
-                if (uiState.email.isNotEmpty() && uiState.password.isNotEmpty() && mvvm.validarCorreo(context, uiState.email) && mvvm.validaContraseña(context, uiState.password)) {
+                if (uiState.email.isNotEmpty() && uiState.password.isNotEmpty() && validarCorreo(context, uiState.email) && validaContraseña(context, uiState.password)) {
                     mvvm.registrarUsuario(uiState.email, uiState.password, context)
                     navController.navigate(AppScreen.LoginScreen.route)
                 } else {

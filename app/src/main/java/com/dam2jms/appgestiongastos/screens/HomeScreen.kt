@@ -89,7 +89,7 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val monedasDisponibles by currencyViewModel.availableCurrencies.collectAsState()
+    val monedasDisponibles by currencyViewModel.monedasDisponibles.collectAsState()
     var seleccionMoneda by remember { mutableStateOf(uiState.monedaActual)}
 
     LaunchedEffect(seleccionMoneda) {
@@ -135,11 +135,11 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
 @Composable
 fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurrencies: List<String>, selectedCurrency: String, onCurrencySelected: (String) -> Unit, currencyViewModel: CurrencyViewModel){
 
-    val conversionResult by currencyViewModel.conversionResult.collectAsState()
-    val currencySymbol = currencyViewModel.getCurrencySymbol(selectedCurrency)
+    val conversionResult by currencyViewModel.resultadoConversion.collectAsState()
+    val currencySymbol = currencyViewModel.obtenerSimboloMoneda(selectedCurrency)
 
     LaunchedEffect(selectedCurrency) {
-        currencyViewModel.convertAllCurrencies(
+        currencyViewModel.convertirMonedas(
             mapOf(
                 "ingresosMensuales" to uiState.ingresosMensuales.toDouble(),
                 "gastosMensuales" to uiState.gastosMensuales.toDouble(),
@@ -176,7 +176,7 @@ fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurr
                 onExpandedChange = { isExpanded = it}
             ) {
                 OutlinedTextField(
-                    value = currencyViewModel.getCurrencyFullName(selectedCurrency),
+                    value = currencyViewModel.obtenerNombreCompleto(selectedCurrency),
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)},
@@ -190,7 +190,7 @@ fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurr
                 ) {
                     availableCurrencies.forEach { currency ->
                         DropdownMenuItem(
-                            text = { Text(currencyViewModel.getCurrencyFullName(currency), fontSize = 14.sp) },
+                            text = { Text(currencyViewModel.obtenerNombreCompleto(currency), fontSize = 14.sp) },
                             onClick = {
                                 onCurrencySelected(currency)
                                 isExpanded = false

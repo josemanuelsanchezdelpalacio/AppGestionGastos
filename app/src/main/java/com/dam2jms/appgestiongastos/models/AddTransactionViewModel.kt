@@ -64,23 +64,45 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
-class TransactionViewModel : ViewModel() {
+class AddTransactionViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    //inicializo el ViewModel y lee las transacciones al crear el ViewModel
-    init {
-        leerTransacciones()
+    /**
+     * Actualiza el estado del UI con la cantidad, descripción y tipo de transacción proporcionados.
+     *
+     * @param cantidad La cantidad a actualizar en el estado del UI.
+     * @param descripcion La descripción a actualizar en el estado del UI.
+     * @param tipo El tipo de transacción (por ejemplo, "ingreso" o "gasto") a actualizar en el estado del UI.
+     */
+    fun actualizarDatosTransaccion(cantidad: String, descripcion: String, tipo: String) {
+        _uiState.update { it.copy(cantidad = cantidad, descripcion = descripcion, tipo = tipo) }
     }
 
     /**
-     * Actualiza el estado del UI con las listas de ingresos y gastos proporcionadas.
+     * Agrega una nueva transacción a Firestore y actualiza el estado del UI en caso de éxito o fracaso.
      *
-     * @param ingresos La lista de transacciones de tipo "ingreso" a actualizar.
-     * @param gastos La lista de transacciones de tipo "gasto" a actualizar.
+     * @param transaccion La transacción a agregar.
+     * @param context El contexto de la aplicación utilizado para mostrar el Toast.
      */
-    fun actualizarTransaccion(ingresos: List<Transaccion>, gastos: List<Transaccion>) {
-        _uiState.update { it.copy(ingresos = ingresos, gastos = gastos) }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun agregarTransaccion(transaccion: Transaccion, context: Context) {
+        //determina la coleccion en Firestore segun el tipo de transaccion
+        val nombreColeccion = if (transaccion.tipo == "ingreso") "ingresos" else "gastos"
+        //copio la transaccion y agrego la fecha actual
+        val nuevaTransaccion = transaccion.copy(fecha = LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+
+        FireStoreUtil.añadirTransaccion(
+            collection = nombreColeccion,
+            transaccion = nuevaTransaccion,
+            onSuccess = {
+                Toast.makeText(context, "${transaccion.tipo.capitalize()} agregado con éxito", Toast.LENGTH_SHORT).show()
+                leerTransacciones()
+            },
+            onFailure = { exception ->
+                Toast.makeText(context, "Error al agregar el ${transaccion.tipo}: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 
     /**
@@ -98,58 +120,57 @@ class TransactionViewModel : ViewModel() {
             onSuccess = { transacciones ->
                 val ingresos = transacciones.filter { it.tipo == "ingreso" }
                 val gastos = transacciones.filter { it.tipo == "gasto" }
-                actualizarTransaccion(ingresos, gastos)
+                _uiState.update { it.copy(ingresos = ingresos, gastos = gastos) }
             },
             onFailure = {}
         )
     }
 
-    /**metodo para el icono del calendario de la clase TransactionScreen*/
-    fun showDatePicker(context: Context, fechaActual: LocalDate, fechaSeleccionada: (LocalDate) -> Unit) {
-        val año = fechaActual.year
-        val mes = fechaActual.monthValue - 1
-        val dia = fechaActual.dayOfMonth
-
-        DatePickerDialog(context, { _, selecAño, selecMes, selecDia ->
-            val nuevaFecha = LocalDate.of(selecAño, selecMes + 1, selecDia)
-            fechaSeleccionada(nuevaFecha)
-
-            _uiState.value = _uiState.value.copy(fecha = nuevaFecha.toString())
-        }, año, mes, dia).show()
-    }
-
-    /**metodo para el calendario horizontal con los ultimos 30 dias de la clase TransactionScreen*/
+    /***/
     @Composable
-    fun horizontalCalendar(fechaSeleccionada: LocalDate, onDateSelected: (LocalDate) -> Unit) {
-
-        val fechas = remember{
-            (0..30).map { LocalDate.now().minusDays(it.toLong()) }
-        }
-
-        LazyRow(
-            modifier = Modifier.padding(vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+    fun categoriaItem(categoria: Categoria, onClick: () -> Unit){
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onClick() },
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(8.dp)
         ) {
-            items(fechas) { fecha ->
-                val seleccionada = fecha == fechaSeleccionada
-                val background = if(seleccionada) MaterialTheme.colorScheme.primary else Color.Transparent
-                val textColor = if(seleccionada) Blanco else MaterialTheme.colorScheme.onBackground
-
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(background, shape = CircleShape)
-                        .border(1.dp, if (seleccionada) Blanco else Gris, shape = CircleShape)
-                        .clickable { onDateSelected(fecha) },
-                    contentAlignment = Alignment.Center
-                ){
-                    Text(
-                        text = fecha.dayOfMonth.toString(),
-                        color = textColor,
-                        fontWeight = if(seleccionada) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ){
+                Icon(
+                    imageVector = obtenerIconoCategoria(categoria.nombre),
+                    contentDescription = categoria.nombre,
+                    tint = NaranjaClaro,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(text = categoria.nombre, style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
+
+    /**metodo para establecer un icono a cada categoria*/
+    @Composable
+    fun obtenerIconoCategoria(categoria: String): ImageVector {
+
+        return when (categoria.toLowerCase()){
+            "salario" -> Icons.Default.Money
+            "casa" -> Icons.Default.Home
+            "ropa" -> Icons.Default.ShoppingBag
+            "educacion" -> Icons.Default.School
+            "entretenimiento" -> Icons.Default.Movie
+            "regalo" -> Icons.Default.CardGiftcard
+            "mascota" -> Icons.Default.Pets
+            "viajes" -> Icons.Default.Flight
+            else -> Icons.Default.Category
+        }
+
+    }
+
 }

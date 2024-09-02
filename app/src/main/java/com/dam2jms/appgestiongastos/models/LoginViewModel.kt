@@ -39,45 +39,15 @@ class LoginViewModel : AuthViewModel() {
             }
     }
 
-    fun firebaseSignInWithGoogle(googleCredential: AuthCredential, context: Context, navController: NavController) {
-        try {
-            auth.signInWithCredential(googleCredential)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        // Inicio de sesión exitoso, puedes obtener la información del usuario
-                        Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
-                        // Navega a la pantalla de inicio o la pantalla deseada
-                        navController.navigate(AppScreen.HomeScreen.route)
-                    } else {
-                        // Si el inicio de sesión falla, muestra un mensaje al usuario.
-                        Toast.makeText(context, "Error en el inicio de sesión: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                    }
-
-                }
-        } catch (e: Exception) {
-            // Manejo de cualquier excepción que ocurra
-            Toast.makeText(context, "Excepción durante el inicio de sesión: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     /**Permite recuperar la contraseña de un usuario a traves de un correo*/
     fun recuperarContraseña(email: String, context: Context) {
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(
-                        context,
-                        "correo de recuperacion enviado",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(context, "correo de recuperacion enviado", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(
-                        context,
-                        "error al enviar correo de recuperacion",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(context, "error al enviar correo de recuperacion", Toast.LENGTH_SHORT).show()
                 }
             }
-
     }
 }

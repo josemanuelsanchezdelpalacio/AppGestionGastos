@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dam2jms.appgestiongastos.data.CategoriaAPI
-import com.dam2jms.appgestiongastos.models.CategoryViewModel
 import com.dam2jms.appgestiongastos.models.CurrencyViewModel
 import com.dam2jms.appgestiongastos.models.HomeViewModel
 import com.dam2jms.appgestiongastos.models.LoginViewModel
@@ -51,7 +50,7 @@ fun AppNavigation(){
         }
         composable(AppScreen.AddTransactionScreen.route){
             val categoryApi = CategoriaAPI
-            AddTransactionScreen(navController, mvvm = TransactionViewModel(), categoryViewModel = CategoryViewModel())
+            AddTransactionScreen(navController, mvvm = TransactionViewModel())
         }
         composable(AppScreen.HistoryScreen.route){
             HistoryScreen(navController, mvvm = TransactionViewModel())
