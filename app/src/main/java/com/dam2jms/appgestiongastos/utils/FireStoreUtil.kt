@@ -20,10 +20,7 @@ object FireStoreUtil {
      * @param onSuccess Función a ejecutar en caso de éxito con la lista de transacciones.
      * @param onFailure Función a ejecutar en caso de error.
      */
-    fun obtenerTransacciones(
-        onSuccess: (List<Transaccion>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
+    fun obtenerTransacciones(onSuccess: (List<Transaccion>) -> Unit, onFailure: (Exception) -> Unit) {
         val userId = Firebase.auth.currentUser?.uid ?: return
 
         db.collection("users")
@@ -31,13 +28,19 @@ object FireStoreUtil {
             .collection("ingresos")
             .get()
             .addOnSuccessListener { ingresosSnapshot ->
-                val ingresos = ingresosSnapshot.toObjects(Transaccion::class.java)
+                val ingresos = ingresosSnapshot.documents.mapNotNull { document ->
+                    val transaccion = document.toObject(Transaccion::class.java)
+                    transaccion?.apply { id = document.id }
+                }
                 db.collection("users")
                     .document(userId)
                     .collection("gastos")
                     .get()
                     .addOnSuccessListener { gastosSnapshot ->
-                        val gastos = gastosSnapshot.toObjects(Transaccion::class.java)
+                        val gastos = gastosSnapshot.documents.mapNotNull { document ->
+                            val transaccion = document.toObject(Transaccion::class.java)
+                            transaccion?.apply { id = document.id }
+                        }
                         onSuccess(ingresos + gastos)
                     }
                     .addOnFailureListener { onFailure(it) }
@@ -52,24 +55,60 @@ object FireStoreUtil {
      * @param onSuccess Función a ejecutar en caso de éxito.
      * @param onFailure Función a ejecutar en caso de error.
      */
-
-
-    fun añadirTransaccion(
-        collection: String,
-        transaccion: Transaccion,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
+    fun añadirTransaccion(collection: String, transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
         val userId = Firebase.auth.currentUser?.uid ?: return
 
         db.collection("users")
             .document(userId)
             .collection(collection)
             .add(transaccion)
+            .addOnSuccessListener { documentReference ->
+                // Asignar el ID del documento al objeto Transaccion
+                documentReference.update("id", documentReference.id)
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    /**
+     * Elimina una transacción específica de Firestore.
+     * @param collection Colección de la transacción ("ingresos" o "gastos")
+     * @param transaccionId ID de la transacción a eliminar
+     * @param onSuccess Función a ejecutar en caso de éxito
+     * @param onFailure Función a ejecutar en caso de error
+     */
+    fun eliminarTransaccion(collection: String, transaccionId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val userId = Firebase.auth.currentUser?.uid ?: return
+
+        db.collection("users")
+            .document(userId)
+            .collection(collection)
+            .document(transaccionId)
+            .delete()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    /**
+     * Modifica una transacción existente en Firestore.
+     * @param collection Colección de la transacción ("ingresos" o "gastos")
+     * @param transaccionId ID de la transacción a modificar
+     * @param transaccion Datos de la transacción actualizada
+     * @param onSuccess Función a ejecutar en caso de éxito
+     * @param onFailure Función a ejecutar en caso de error
+     */
+    fun modificarTransaccion(collection: String, transaccionId: String, transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val userId = Firebase.auth.currentUser?.uid ?: return
+
+        db.collection("users")
+            .document(userId)
+            .collection(collection)
+            .document(transaccionId)
+            .set(transaccion)
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
 }
-
 
 

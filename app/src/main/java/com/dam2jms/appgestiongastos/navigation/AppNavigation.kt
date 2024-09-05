@@ -16,6 +16,8 @@ import com.dam2jms.appgestiongastos.models.LoginViewModel
 import com.dam2jms.appgestiongastos.models.RegisterViewModel
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
 import com.dam2jms.appgestiongastos.screens.AddTransactionScreen
+import com.dam2jms.appgestiongastos.screens.EditTransactionScreen
+import com.dam2jms.appgestiongastos.screens.EditTransactionScreenBody
 import com.dam2jms.appgestiongastos.screens.HistoryScreen
 import com.dam2jms.appgestiongastos.screens.HomeScreen
 import com.dam2jms.appgestiongastos.screens.LoginScreen
@@ -45,16 +47,18 @@ fun AppNavigation(){
             route = AppScreen.TransactionScreen.route,
             arguments = listOf(navArgument("date") { type = NavType.StringType })
         ) { backStackEntry ->
-            val selectedDate = backStackEntry.arguments?.getString("date") ?: LocalDate.now().format(
-                DateTimeFormatter.ISO_DATE)
+            val selectedDate = backStackEntry.arguments?.getString("date") ?: LocalDate.now().format(DateTimeFormatter.ISO_DATE)
             TransactionScreen(navController, mvvm = TransactionViewModel(), seleccionarFecha = selectedDate)
         }
         composable(AppScreen.AddTransactionScreen.route){
-            val categoryApi = CategoriaAPI
             AddTransactionScreen(navController, mvvm = AddTransactionViewModel())
         }
         composable(AppScreen.HistoryScreen.route){
             HistoryScreen(navController, mvvm = TransactionViewModel())
+        }
+        composable(route = AppScreen.EditTransactionScreen.route + "/{transactionId}",) { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getString("transactionId") ?: return@composable
+            EditTransactionScreen(navController, mvvm = TransactionViewModel(), transactionId = transactionId)
         }
     }
 }

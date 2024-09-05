@@ -89,13 +89,12 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val monedasDisponibles by currencyViewModel.monedasDisponibles.collectAsState()
+    val monedasDisponibles by currencyViewModel.availableCurrencies.collectAsState()
     var seleccionMoneda by remember { mutableStateOf(uiState.monedaActual)}
 
     LaunchedEffect(seleccionMoneda) {
         mvvm.actualizarMoneda(seleccionMoneda)
     }
-
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -136,11 +135,11 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
 @Composable
 fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurrencies: List<String>, selectedCurrency: String, onCurrencySelected: (String) -> Unit, currencyViewModel: CurrencyViewModel){
 
-    val conversionResult by currencyViewModel.resultadoConversion.collectAsState()
-    val currencySymbol = currencyViewModel.obtenerSimboloMoneda(selectedCurrency)
+    val conversionResult by currencyViewModel.conversionResult.collectAsState()
+    val currencySymbol = currencyViewModel.getCurrencySymbol(selectedCurrency)
 
     LaunchedEffect(selectedCurrency) {
-        currencyViewModel.convertirMonedas(
+        currencyViewModel.convertAllCurrencies(
             mapOf(
                 "ingresosMensuales" to uiState.ingresosMensuales.toDouble(),
                 "gastosMensuales" to uiState.gastosMensuales.toDouble(),
@@ -177,7 +176,7 @@ fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurr
                 onExpandedChange = { isExpanded = it}
             ) {
                 OutlinedTextField(
-                    value = currencyViewModel.obtenerNombreCompleto(selectedCurrency),
+                    value = currencyViewModel.getCurrencyFullName(selectedCurrency),
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)},
@@ -191,7 +190,7 @@ fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurr
                 ) {
                     availableCurrencies.forEach { currency ->
                         DropdownMenuItem(
-                            text = { Text(currencyViewModel.obtenerNombreCompleto(currency), fontSize = 14.sp) },
+                            text = { Text(currencyViewModel.getCurrencyFullName(currency), fontSize = 14.sp) },
                             onClick = {
                                 onCurrencySelected(currency)
                                 isExpanded = false
@@ -204,26 +203,26 @@ fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurr
 
         item {
             graficoCircularConInfo(
-                gastos = conversionResult["gastosMensuales"]?.toFloat() ?: 0f,
-                ingresos = conversionResult["ingresosMensuales"]?.toFloat() ?: 0f,
+                gastos = uiState.gastosMensuales.toFloat(),
+                ingresos = uiState.ingresosMensuales.toFloat(),
                 moneda = currencySymbol
             )
         }
 
         item {
             cajaAhorros(
-                ahorrosDiarios = conversionResult["ahorrosDiarios"]?.toLong() ?: 0L,
-                ahorrosMensuales = conversionResult["ahorrosMensuales"]?.toLong() ?: 0L,
+                ahorrosDiarios = uiState.ahorrosDiarios,
+                ahorrosMensuales = uiState.ahorrosMensuales,
                 moneda = currencySymbol
             )
         }
 
         item {
             cajaFinanzasFijas(
-                ingresosDiarios = conversionResult["ingresosDiarios"]?.toLong() ?: 0L,
-                ingresosMensuales = conversionResult["ingresosMensuales"]?.toLong() ?: 0L,
-                gastosDiarios = conversionResult["gastosDiarios"]?.toLong() ?: 0L,
-                gastosMensuales = conversionResult["gastosMensuales"]?.toLong() ?: 0L,
+                ingresosDiarios = uiState.ingresosDiarios,
+                ingresosMensuales = uiState.ingresosMensuales,
+                gastosDiarios = uiState.gastosDiarios,
+                gastosMensuales = uiState.ingresosMensuales,
                 moneda = currencySymbol
             )
         }
@@ -371,3 +370,4 @@ fun cajaFinanzasFijas(ingresosDiarios: Long, ingresosMensuales: Long, gastosDiar
         }
     }
 }
+

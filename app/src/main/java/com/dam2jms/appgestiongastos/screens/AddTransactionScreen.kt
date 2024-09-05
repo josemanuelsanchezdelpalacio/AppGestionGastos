@@ -230,11 +230,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
                 val tipoSeleccionado = uiState.tipo.isNotEmpty()
 
                 if (!tipoSeleccionado) {
-                    Toast.makeText(
-                        context,
-                        "Debe seleccionar Ingresos o Gastos",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(context, "Debe seleccionar Ingresos o Gastos", Toast.LENGTH_SHORT).show()
                 }
 
                 if (cantidadValida && descripcionValida) {

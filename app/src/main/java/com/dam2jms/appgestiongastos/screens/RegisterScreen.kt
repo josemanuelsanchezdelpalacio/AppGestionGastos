@@ -84,7 +84,7 @@ fun RegisterScreen(navController: NavController, mvvm: RegisterViewModel){
         paddingValues ->
 
         //llamo al componente para el diseño del fondo
-        fondoPantalla {
+        fondoPantalla{
             RegisterBodyScreen(paddingValues = paddingValues, navController = navController, mvvm = mvvm, uiState = uiState)
         }
     }

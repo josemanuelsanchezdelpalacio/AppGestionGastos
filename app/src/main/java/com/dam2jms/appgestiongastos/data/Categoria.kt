@@ -7,9 +7,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import retrofit2.http.GET
 
+/** Simula una API para obtener categorias de ingresos y gastos*/
 data class Categoria(val id: String, val nombre: String, var tipo: String)
 
-/** Simula una API para obtener categorias de ingresos y gastos*/
 object CategoriaAPI {
 
     /**metodo que obtiene una lista de categorias segun el tipo (ingreso o gasto)
@@ -17,7 +17,7 @@ object CategoriaAPI {
      * @return Lista de categorias segun el tipo
      * */
     suspend fun obtenerCategorias(tipo: String): List<Categoria> = withContext(Dispatchers.IO) {
-        when(tipo) {
+        when(tipo){
             "ingreso" -> listOf(
                 Categoria(id = "1", nombre = "reembolso", tipo = "ingreso"),
                 Categoria(id = "2", nombre = "salario", tipo = "ingreso"),
@@ -37,4 +37,5 @@ object CategoriaAPI {
             else -> emptyList()
         }
     }
+
 }

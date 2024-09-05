@@ -3,6 +3,7 @@ package com.dam2jms.appgestiongastos.models
 import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -68,7 +69,7 @@ class TransactionViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    //inicializo el ViewModel y lee las transacciones al crear el ViewModel
+    // Inicializo el ViewModel y leo las transacciones al crear el ViewModel
     init {
         leerTransacciones()
     }
@@ -100,11 +101,52 @@ class TransactionViewModel : ViewModel() {
                 val gastos = transacciones.filter { it.tipo == "gasto" }
                 actualizarTransaccion(ingresos, gastos)
             },
-            onFailure = {}
+            onFailure = {
+                // Manejo de errores
+            }
         )
     }
 
-    /**metodo para el icono del calendario de la clase TransactionScreen*/
+    /** Método para eliminar una transacción */
+    fun eliminarTransaccionExistente(collection: String, transaccionId: String, context: Context) {
+        // Validar que el transaccionId no esté vacío
+        if (transaccionId.isBlank()) {
+            Toast.makeText(context, "ID de transacción inválido", Toast.LENGTH_SHORT).show()
+            Log.e("EliminarTransaccion", "transaccionId está vacío o en blanco")
+            return
+        }
+
+        Log.d("EliminarTransaccion", "Eliminando transacción con ID: $transaccionId en colección: $collection")
+
+        FireStoreUtil.eliminarTransaccion(
+            collection, transaccionId,
+            onSuccess = {
+                Toast.makeText(context, "Transacción eliminada correctamente", Toast.LENGTH_SHORT).show()
+            },
+            onFailure = { exception ->
+                // Mostrar el mensaje de error detallado
+                val errorMsg = exception.localizedMessage ?: "Error desconocido"
+                Toast.makeText(context, "Error al eliminar la transacción: $errorMsg", Toast.LENGTH_LONG).show()
+                Log.e("EliminarTransaccion", "Error al eliminar transacción: $errorMsg")
+            }
+        )
+    }
+
+
+    /** Método para actualizar una transacción existente */
+    fun actualizarTransaccionExistente(collection: String, transaccionId: String, transaccion: Transaccion, context: Context) {
+
+        FireStoreUtil.modificarTransaccion(collection, transaccionId, transaccion,
+            onSuccess = {
+                Toast.makeText(context, "Transacción actualizada correctamente", Toast.LENGTH_SHORT).show()
+            },
+            onFailure = {
+                Toast.makeText(context, "Error al actualizar la transaccion", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    /** Método para mostrar el selector de fecha en TransactionScreen */
     fun showDatePicker(context: Context, fechaActual: LocalDate, fechaSeleccionada: (LocalDate) -> Unit) {
         val año = fechaActual.year
         val mes = fechaActual.monthValue - 1
@@ -118,11 +160,10 @@ class TransactionViewModel : ViewModel() {
         }, año, mes, dia).show()
     }
 
-    /**metodo para el calendario horizontal con los ultimos 30 dias de la clase TransactionScreen*/
+    /** Método para mostrar un calendario horizontal */
     @Composable
     fun horizontalCalendar(fechaSeleccionada: LocalDate, onDateSelected: (LocalDate) -> Unit) {
-
-        val fechas = remember{
+        val fechas = remember {
             (0..30).map { LocalDate.now().minusDays(it.toLong()) }
         }
 
@@ -132,8 +173,8 @@ class TransactionViewModel : ViewModel() {
         ) {
             items(fechas) { fecha ->
                 val seleccionada = fecha == fechaSeleccionada
-                val background = if(seleccionada) MaterialTheme.colorScheme.primary else Color.Transparent
-                val textColor = if(seleccionada) Blanco else MaterialTheme.colorScheme.onBackground
+                val background = if (seleccionada) MaterialTheme.colorScheme.primary else Color.Transparent
+                val textColor = if (seleccionada) Blanco else MaterialTheme.colorScheme.onBackground
 
                 Box(
                     modifier = Modifier
@@ -142,15 +183,14 @@ class TransactionViewModel : ViewModel() {
                         .border(1.dp, if (seleccionada) Blanco else Gris, shape = CircleShape)
                         .clickable { onDateSelected(fecha) },
                     contentAlignment = Alignment.Center
-                ){
+                ) {
                     Text(
                         text = fecha.dayOfMonth.toString(),
                         color = textColor,
-                        fontWeight = if(seleccionada) FontWeight.Bold else FontWeight.Normal
+                        fontWeight = if (seleccionada) FontWeight.Bold else FontWeight.Normal
                     )
                 }
             }
         }
     }
 }
-

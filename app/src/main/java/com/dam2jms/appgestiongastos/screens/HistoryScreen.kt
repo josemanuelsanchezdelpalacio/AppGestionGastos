@@ -196,7 +196,7 @@ fun HistoryScreenBody(paddingValues: PaddingValues, mvvm: TransactionViewModel, 
         if(transaccionesFiltradas.isNotEmpty()){
             LazyColumn {
                 items(transaccionesFiltradas){ transaccion ->
-                    TransactionItem(transaccion = transaccion)
+                    //TransactionItem(transaccion = transaccion)
                 }
             }
         }else{
