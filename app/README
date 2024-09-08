@@ -1,0 +1,68 @@
+# Aplicación de gestión de gastos
+
+## Descripción
+Aplicación móvil de gestión de gastos creada con Kotlin y usando Jetpack Compose para la interfaz de usuario
+
+Permite a los usuarios llevar un registro de sus ingresos y gastos, ver balances y realizar conversiones de moneda
+
+## Características
+- Autenticación de usuarios (registro, inicio de sesión)
+- Registro de ingresos y gastos
+- Visualización de balance diario y mensual
+- Categorización de transacciones
+- Conversión de monedas
+- Interfaz de usuario con Jetpack Compose
+
+## Tecnologías
+- Kotlin
+- Jetpack Compose
+- Firebase y FireStore (Autenticación y BD)
+- MVVM (Model-View-ViewModel)
+- Kotlin Coroutines y Flow
+- Retrofit (para la API de conversión de monedas)
+
+## Estructura del Proyecto
+
+## Components
+- Diversos componentes reutilizables en la clase Components
+
+## Data
+- Categoria: Define la estructura de las categorías de las transacciones
+- CurrencyConverter: Implemente la lógica de conversión de monedas
+
+## Models (ViewModels)
+- AuthViewModel: Base abstracta para la autenticación
+- LoginViewModel: Maneja el inicio de sesión de los usuarios
+- RegisterViewModel: Gestiona el registro de nuevos usuarios
+- HomeViewModel: Controla la lógica de la pantalla principal y el calculo del balance
+- TransactionViewModel: Maneja la lógica de las transacciones (ingresos y gastos)
+- CurrencyViewModel: Gestiona la conversión de monedas
+- CategoryViewModel: Maneja las categorías de transacciones
+
+## Navigation
+- AppNavigation: Configuración de la navegación entre pantallas usando Jetpack Navigation
+- AppScreen: Define las diferentes pantallas de la app
+
+## Screens
+- AddTransactionScreen: Permite a los usuarios agregar una nueva transacción seleccionando categoría y cantidad
+- HistoryScreen: Filtro de búsqueda para buscar entre todas las transacciones a través de categoría o fecha
+- HomeScreen: Presenta un resumen de balance diario y mensual
+- LoginScreen: Pantalla de inicio de sesión usando Firebase
+- RegisterScreen: Pantalla de registro de nuevos usuarios usando Firestore
+- TransactionScreen: Muestra todas las transacciones según el dia especifico
+
+## States
+- UiState: Mantiene el estado de la UI
+- Transaccion: Define la estructura de las transacciones
+
+## Utils
+- FireStoreUtil: Utilidades que facilita la interacción con FireStore permitiendo obtener y agregar transacciones para el usuario actual.
+
+## Uso
+1. Regístro o incio de sesión en la app
+2. En la pantalla HomeScreen. Abrir el menú para seleccionar la opción de "añadir transacciones"
+3. En la pantalla TransactionScreen. Botón "+" para agregar una nueva transacción (selección de día con el calendario para guardar en esa fecha)
+4. En la pantalla AddTransactionScreen. Selección de una categoría (salen cuando se pulsa ingreso o gasto) y rellenar el campo de cantidad.
+5. En la pantalla TransactionScreen aparece la transacción añadida. Si se vuelve a HomeScreen también vera esa transacción como gastos/ingresos diarios y con su balance.
+6. En el menú selecciona Historial. Se puede buscar transacciones según categoría o fecha.
+
