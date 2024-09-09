@@ -4,7 +4,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,24 +17,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,16 +47,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.dam2jms.appgestiongastos.components.Components.menu
+import com.dam2jms.appgestiongastos.components.ScreenComponents.menu
 import com.dam2jms.appgestiongastos.models.CurrencyViewModel
 import com.dam2jms.appgestiongastos.models.HomeViewModel
-import com.dam2jms.appgestiongastos.models.LoginViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
@@ -77,7 +66,6 @@ import com.dam2jms.appgestiongastos.ui.theme.VerdeClaro
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.TextStyle
-import java.util.Currency
 import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -89,7 +77,7 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val monedasDisponibles by currencyViewModel.availableCurrencies.collectAsState()
+    val monedasDisponibles by currencyViewModel.monedasDisponibles.collectAsState()
     var seleccionMoneda by remember { mutableStateOf(uiState.monedaActual)}
 
     LaunchedEffect(seleccionMoneda) {
@@ -135,11 +123,11 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
 @Composable
 fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurrencies: List<String>, selectedCurrency: String, onCurrencySelected: (String) -> Unit, currencyViewModel: CurrencyViewModel){
 
-    val conversionResult by currencyViewModel.conversionResult.collectAsState()
-    val currencySymbol = currencyViewModel.getCurrencySymbol(selectedCurrency)
+    val conversionResult by currencyViewModel.resultadoConversion.collectAsState()
+    val currencySymbol = currencyViewModel.obtenerSimboloMoneda(selectedCurrency)
 
     LaunchedEffect(selectedCurrency) {
-        currencyViewModel.convertAllCurrencies(
+        currencyViewModel.convertirMonedas(
             mapOf(
                 "ingresosMensuales" to uiState.ingresosMensuales.toDouble(),
                 "gastosMensuales" to uiState.gastosMensuales.toDouble(),
@@ -148,8 +136,8 @@ fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurr
                 "ingresosDiarios" to uiState.ingresosDiarios.toDouble(),
                 "gastosDiarios" to uiState.gastosDiarios.toDouble()
             ),
-            fromCurrency = uiState.monedaActual,
-            toCurrency = selectedCurrency
+            monedaOrigen = uiState.monedaActual,
+            monedaDestino = selectedCurrency
         )
     }
 
@@ -176,7 +164,7 @@ fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurr
                 onExpandedChange = { isExpanded = it}
             ) {
                 OutlinedTextField(
-                    value = currencyViewModel.getCurrencyFullName(selectedCurrency),
+                    value = currencyViewModel.obtenerNombreMoneda(selectedCurrency),
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)},
@@ -190,7 +178,7 @@ fun HomeScreenBody(paddingValues: PaddingValues, uiState: UiState, availableCurr
                 ) {
                     availableCurrencies.forEach { currency ->
                         DropdownMenuItem(
-                            text = { Text(currencyViewModel.getCurrencyFullName(currency), fontSize = 14.sp) },
+                            text = { Text(currencyViewModel.obtenerNombreMoneda(currency), fontSize = 14.sp) },
                             onClick = {
                                 onCurrencySelected(currency)
                                 isExpanded = false

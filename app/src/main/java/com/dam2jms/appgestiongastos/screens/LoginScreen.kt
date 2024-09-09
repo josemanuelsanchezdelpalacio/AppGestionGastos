@@ -1,10 +1,7 @@
 package com.dam2jms.appgestiongastos.screens
 
-import android.app.Activity
 import android.os.Build
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -18,26 +15,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,29 +34,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.R
-import com.dam2jms.appgestiongastos.components.Components
-import com.dam2jms.appgestiongastos.components.Components.AuthTextField
-import com.dam2jms.appgestiongastos.components.Components.fondoPantalla
+import com.dam2jms.appgestiongastos.components.ScreenComponents.AuthTextField
+import com.dam2jms.appgestiongastos.components.ScreenComponents.fondoPantalla
 import com.dam2jms.appgestiongastos.models.LoginViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaClaro
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaOscuro
-import com.dam2jms.appgestiongastos.utils.Validaciones
 import com.dam2jms.appgestiongastos.utils.Validaciones.validaContraseña
 import com.dam2jms.appgestiongastos.utils.Validaciones.validarCorreo
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)

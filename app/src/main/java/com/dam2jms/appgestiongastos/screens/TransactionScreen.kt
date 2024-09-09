@@ -1,6 +1,5 @@
 package com.dam2jms.appgestiongastos.screens
 
-import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Build
 import android.util.Log
@@ -40,8 +39,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItemDefaults.containerColor
-import androidx.compose.material3.ListItemDefaults.contentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.RadioButton
@@ -65,7 +62,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.dam2jms.appgestiongastos.components.Components.menu
+import com.dam2jms.appgestiongastos.components.ScreenComponents.menu
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
 import com.dam2jms.appgestiongastos.states.Transaccion
