@@ -11,13 +11,13 @@ import androidx.navigation.navArgument
 import com.dam2jms.appgestiongastos.data.CategoriaAPI
 import com.dam2jms.appgestiongastos.models.AddTransactionViewModel
 import com.dam2jms.appgestiongastos.models.CurrencyViewModel
+import com.dam2jms.appgestiongastos.models.EditTransactionViewModel
 import com.dam2jms.appgestiongastos.models.HomeViewModel
 import com.dam2jms.appgestiongastos.models.LoginViewModel
 import com.dam2jms.appgestiongastos.models.RegisterViewModel
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
 import com.dam2jms.appgestiongastos.screens.AddTransactionScreen
 import com.dam2jms.appgestiongastos.screens.EditTransactionScreen
-import com.dam2jms.appgestiongastos.screens.EditTransactionScreenBody
 import com.dam2jms.appgestiongastos.screens.HistoryScreen
 import com.dam2jms.appgestiongastos.screens.HomeScreen
 import com.dam2jms.appgestiongastos.screens.LoginScreen
@@ -56,9 +56,13 @@ fun AppNavigation(){
         composable(AppScreen.HistoryScreen.route){
             HistoryScreen(navController, mvvm = TransactionViewModel())
         }
-        composable(route = AppScreen.EditTransactionScreen.route + "/{transactionId}",) { backStackEntry ->
-            val transactionId = backStackEntry.arguments?.getString("transactionId") ?: return@composable
-            EditTransactionScreen(navController, mvvm = TransactionViewModel(), transactionId = transactionId)
+        composable(
+            route = AppScreen.EditTransactionScreen.route,
+            arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getString("transactionId")?: ""
+            val seleccionarFecha = LocalDate.now().toString()
+            EditTransactionScreen(navController, mvvm = EditTransactionViewModel(), seleccionarFecha = seleccionarFecha)
         }
     }
 }

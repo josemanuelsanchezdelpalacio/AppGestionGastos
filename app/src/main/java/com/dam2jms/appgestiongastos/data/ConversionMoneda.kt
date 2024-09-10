@@ -11,7 +11,7 @@ class ConversionMoneda {
     private val claveApi = "d81f3898c35aad6e086bb265"
 
     //url para las solicitudes a la api
-    private val url = "https://v6.exchangerate-api.com/v6/$claveApi"
+    private val url = "https://v6.exchangerate-api.com/v6/$claveApi/"
 
     private val retrofit = Retrofit.Builder()
         .baseUrl(url)

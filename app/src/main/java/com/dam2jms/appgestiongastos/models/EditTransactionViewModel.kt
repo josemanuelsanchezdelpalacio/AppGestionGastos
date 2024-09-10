@@ -23,13 +23,8 @@ class EditTransactionViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState
 
-    // Función para actualizar los datos de la transacción en el UiState
-    fun actualizarDatosTransaccion(
-        cantidad: String? = null,
-        descripcion: String? = null,
-        tipo: String? = null,
-        fecha: String? = null
-    ) {
+    //metodo para actualizar los datos de la transacción en el UiState
+    fun actualizarDatosTransaccion(cantidad: String? = null, descripcion: String? = null, tipo: String? = null, fecha: String? = null) {
         _uiState.update { currentState ->
             currentState.copy(
                 cantidad = cantidad ?: currentState.cantidad,
@@ -40,13 +35,8 @@ class EditTransactionViewModel : ViewModel() {
         }
     }
 
-    // Función para modificar la transacción usando Firestore
-    fun modificarTransaccion(
-        transaccionId: String,
-        collection: String,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
+    //metodo para modificar la transacción usando Firestore
+    fun modificarTransaccion(transaccionId: String, collection: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
         val transaccion = Transaccion(
             id = transaccionId,
             cantidad = _uiState.value.cantidad.toDoubleOrNull() ?: 0.0,

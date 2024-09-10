@@ -11,8 +11,7 @@ sealed class AppScreen(val route: String){
     }
     object AddTransactionScreen: AppScreen("addTransaction_screen")
     object HistoryScreen: AppScreen("history_screen")
-    object EditTransactionScreen: AppScreen("transaction_screen/{transactionId}"){
-        fun createRoute(transactionId: String) = "transaction_screen/$transactionId"
+    object EditTransactionScreen: AppScreen("editTransaction_screen/{transactionId}"){
+        fun createRoute(transactionId: String) = "editTransaction_screen/$transactionId"
     }
 }
-
