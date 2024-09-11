@@ -1,12 +1,8 @@
 package com.dam2jms.appgestiongastos.models
 
-import android.app.Application
-import android.content.Context
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dam2jms.appgestiongastos.data.ConversionMoneda
+import com.dam2jms.appgestiongastos.data.CurrencyConverter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -15,7 +11,7 @@ import java.util.Locale
 
 class CurrencyViewModel : ViewModel() {
 
-    private val monedaConvertida = ConversionMoneda()
+    private val monedaConvertida = CurrencyConverter()
 
     private val _resultadoConversion = MutableStateFlow<Map<String, Double>>(emptyMap())
     val resultadoConversion: StateFlow<Map<String, Double>> = _resultadoConversion
@@ -30,7 +26,7 @@ class CurrencyViewModel : ViewModel() {
     /**metodo que obtiene las monedas para conversion y las almacena*/
     private fun obtenerMonedasDisponibles() {
         viewModelScope.launch {
-            val tasas = monedaConvertida.obtenerTasasCambio("EUR")
+            val tasas = monedaConvertida.obtenerTasasMonedas("EUR")
             _monedasDisponibles.value = tasas.keys.toList()
         }
     }
@@ -80,11 +76,10 @@ class CurrencyViewModel : ViewModel() {
      * @return la tasa de cambio*/
     suspend fun obtenerTasaCambio(monedaOrigen: String, monedaDestino: String): Double {
         return try {
-            val rates = monedaConvertida.obtenerTasasCambio(monedaOrigen)
+            val rates = monedaConvertida.obtenerTasasMonedas(monedaOrigen)
             rates[monedaDestino] ?: 1.0  //devuelve 1.0 si la tasa no se encuentra
         } catch (e: Exception) {
             1.0  //devuelve 1.0 en caso de error
         }
     }
 }
-

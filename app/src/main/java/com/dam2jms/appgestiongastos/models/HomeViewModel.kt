@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dam2jms.appgestiongastos.data.CurrencyConverter
 import com.dam2jms.appgestiongastos.states.Transaccion
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
@@ -55,6 +56,7 @@ class HomeViewModel: ViewModel() {
     //estado que se actualizara con datos de ingresos y gastos
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
 
     private val db = Firebase.firestore
     private val currencyViewModel = CurrencyViewModel()
@@ -189,4 +191,3 @@ class HomeViewModel: ViewModel() {
         }
     }
 }
-
