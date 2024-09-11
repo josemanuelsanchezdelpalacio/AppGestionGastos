@@ -39,6 +39,7 @@ class LoginViewModel : AuthViewModel() {
             }
     }
 
+
     /**Permite recuperar la contraseña de un usuario a traves de un correo*/
     fun recuperarContraseña(email: String, context: Context) {
         auth.sendPasswordResetEmail(email)
@@ -51,4 +52,3 @@ class LoginViewModel : AuthViewModel() {
             }
     }
 }
-
