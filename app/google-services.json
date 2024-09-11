@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "337293484525",
-    "project_id": "appgestiongastos-4263c",
-    "storage_bucket": "appgestiongastos-4263c.appspot.com"
+    "project_number": "663393740714",
+    "project_id": "appgestiongastos-f9762",
+    "storage_bucket": "appgestiongastos-f9762.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:337293484525:android:b5dea8734113797fea87e4",
+        "mobilesdk_app_id": "1:663393740714:android:a2adfd24db1534a5026dd3",
         "android_client_info": {
           "package_name": "com.dam2jms.appgestiongastos"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDNJLpN_L20b9muP1ImMclN3tq3VBDiZ-o"
+          "current_key": "AIzaSyCBdRwmhUbswD73zPuGCEnqjUicH1fkSg0"
         }
       ],
       "services": {

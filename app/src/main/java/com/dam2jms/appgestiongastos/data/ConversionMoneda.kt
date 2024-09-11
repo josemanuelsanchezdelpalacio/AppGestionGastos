@@ -8,7 +8,7 @@ import kotlin.time.times
 class ConversionMoneda {
 
     //clave para acceder a la api de exchangeRate
-    private val claveApi = "d81f3898c35aad6e086bb265"
+    private val claveApi = "a8a294922e04eb428e763fe1"
 
     //url para las solicitudes a la api
     private val url = "https://v6.exchangerate-api.com/v6/$claveApi/"
