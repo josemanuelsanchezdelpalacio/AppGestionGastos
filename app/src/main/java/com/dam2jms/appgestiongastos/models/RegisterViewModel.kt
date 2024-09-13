@@ -1,6 +1,7 @@
 package com.dam2jms.appgestiongastos.models
 
 import android.content.Context
+import android.os.PerformanceHintManager
 import android.util.Patterns
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.Properties
 
 /**Permite crear un nuevo usuario en Firebase */
 class RegisterViewModel : AuthViewModel() {

@@ -15,7 +15,6 @@ class CurrencyConverter {
     //url para las solicitudes a la api
     private val baseURL = "https://v6.exchangerate-api.com/v6/$apiKey"
 
-
     /**metodo que obtiene las tasas de cambio para una moneda
      * @param url para la solicitud
      * @param respuesta lee la respuesta de la URL
