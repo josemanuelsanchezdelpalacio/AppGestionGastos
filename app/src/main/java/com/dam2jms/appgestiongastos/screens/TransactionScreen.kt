@@ -62,6 +62,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.dam2jms.appgestiongastos.components.DatePickerComponents.showDatePicker
 import com.dam2jms.appgestiongastos.components.ScreenComponents.menu
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
@@ -120,7 +121,7 @@ fun TransactionScreen(
                     },
                     actions = {
                         IconButton(onClick = {
-                            mvvm.showDatePicker(context, fecha) { nuevaFecha ->
+                            showDatePicker(context, fecha) { nuevaFecha ->
                                 fecha = nuevaFecha
                             }
                         }) {
@@ -316,7 +317,7 @@ fun TransactionItem(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Descripcion: ${transaccion.descripcion}",
+                text = "Categoria: ${transaccion.categoria}",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold
             )

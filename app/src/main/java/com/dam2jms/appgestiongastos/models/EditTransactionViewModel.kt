@@ -28,7 +28,7 @@ class EditTransactionViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 cantidad = cantidad ?: currentState.cantidad,
-                descripcion = descripcion ?: currentState.descripcion,
+                categoria = descripcion ?: currentState.categoria,
                 tipo = tipo ?: currentState.tipo,
                 fecha = fecha ?: currentState.fecha
             )
@@ -40,7 +40,7 @@ class EditTransactionViewModel : ViewModel() {
         val transaccion = Transaccion(
             id = transaccionId,
             cantidad = _uiState.value.cantidad.toDoubleOrNull() ?: 0.0,
-            descripcion = _uiState.value.descripcion,
+            categoria = _uiState.value.categoria,
             fecha = _uiState.value.fecha,
             tipo = _uiState.value.tipo
         )

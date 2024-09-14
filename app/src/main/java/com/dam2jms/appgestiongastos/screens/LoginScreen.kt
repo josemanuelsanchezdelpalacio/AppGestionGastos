@@ -15,15 +15,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,10 +42,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.R
-import com.dam2jms.appgestiongastos.components.ScreenComponents.AuthTextField
 import com.dam2jms.appgestiongastos.components.ScreenComponents.fondoPantalla
 import com.dam2jms.appgestiongastos.models.LoginViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
@@ -109,24 +117,38 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        AuthTextField(
-            label = "Correo electronico",
-            text = uiState.email,
-            onTextChange = {mvvm.onChange(it, uiState.password)},
-            leadingIcon = { Icon(imageVector = Icons.Default.Email, contentDescription = "Correo electronico")},
+        OutlinedTextField(
+            value = uiState.email,
+            onValueChange = { mvvm.onChange(it, uiState.password) },
+            label = { Text("Correo electronico") },
+            singleLine = true,
+            leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = "Correo electronico") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp)
         )
 
-        AuthTextField(
-            label = "Contraseña",
-            text = uiState.password,
-            onTextChange = {mvvm.onChange(uiState.email, it)},
-            isPasswordField = true,
-            isPasswordVisible = uiState.visibilidadPassword,
-            onPasswordVisibilityChange = { mvvm.visibilidadContraseña()},
-            leadingIcon = { Icon(imageVector = Icons.Default.Lock, contentDescription = "Contraseña")},
+        OutlinedTextField(
+            value = uiState.password,
+            onValueChange = { mvvm.onChange(uiState.email, it) },
+            label = { Text("Contraseña") },
+            singleLine = true,
+            leadingIcon = { Icon(imageVector = Icons.Filled.Lock, contentDescription = "Contraseña") },
+            visualTransformation = if(uiState.visibilidadPassword) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val icono = if(uiState.visibilidadPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                IconButton(
+                    onClick = {
+                        uiState.visibilidadPassword != uiState.visibilidadPassword
+                        mvvm.visibilidadContraseña()
+                    }
+                ) {
+                    Icon(imageVector = icono, contentDescription = if(uiState.visibilidadPassword) "Ocultar contraseña" else "Mostrar contraseña")
+                }
+            },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Password
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)

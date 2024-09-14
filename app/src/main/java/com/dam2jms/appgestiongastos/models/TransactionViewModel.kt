@@ -146,20 +146,6 @@ class TransactionViewModel : ViewModel() {
         )
     }
 
-    /** Método para mostrar el selector de fecha en TransactionScreen */
-    fun showDatePicker(context: Context, fechaActual: LocalDate, fechaSeleccionada: (LocalDate) -> Unit) {
-        val año = fechaActual.year
-        val mes = fechaActual.monthValue - 1
-        val dia = fechaActual.dayOfMonth
-
-        DatePickerDialog(context, { _, selecAño, selecMes, selecDia ->
-            val nuevaFecha = LocalDate.of(selecAño, selecMes + 1, selecDia)
-            fechaSeleccionada(nuevaFecha)
-
-            _uiState.value = _uiState.value.copy(fecha = nuevaFecha.toString())
-        }, año, mes, dia).show()
-    }
-
     /** Método para mostrar un calendario horizontal */
     @Composable
     fun horizontalCalendar(fechaSeleccionada: LocalDate, onDateSelected: (LocalDate) -> Unit) {

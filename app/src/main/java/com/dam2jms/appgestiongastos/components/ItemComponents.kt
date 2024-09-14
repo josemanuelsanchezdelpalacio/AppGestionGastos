@@ -64,7 +64,7 @@ object ItemComponents {
                    .padding(16.dp)
            ) {
                Text(
-                   text = "Descripcion: ${transaccion.descripcion}",
+                   text = "Categoria: ${transaccion.categoria}",
                    style = MaterialTheme.typography.bodyLarge,
                    fontWeight = FontWeight.SemiBold,
                )

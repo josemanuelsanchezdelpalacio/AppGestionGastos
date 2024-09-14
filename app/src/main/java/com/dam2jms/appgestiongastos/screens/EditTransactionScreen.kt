@@ -20,7 +20,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Menu
@@ -64,8 +66,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.components.DatePickerComponents
 import com.dam2jms.appgestiongastos.components.DatePickerComponents.showDatePicker
+import com.dam2jms.appgestiongastos.components.ItemComponents.categoriaItem
 import com.dam2jms.appgestiongastos.components.ScreenComponents
-import com.dam2jms.appgestiongastos.components.ScreenComponents.AuthRadioButton
 import com.dam2jms.appgestiongastos.data.Categoria
 import com.dam2jms.appgestiongastos.components.ScreenComponents.menu
 import com.dam2jms.appgestiongastos.data.CategoriaAPI.obtenerCategorias
@@ -94,10 +96,8 @@ fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionVie
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    // Convierte seleccionarFecha a LocalDate para usarlo en el selector de fecha
-    var fecha by remember {
-        mutableStateOf(runCatching { LocalDate.parse(seleccionarFecha) }.getOrElse { LocalDate.now() })
-    }
+    //convierto seleccionarFecha a LocalDate para usarlo en el selector de fecha
+    var fecha by remember { mutableStateOf(runCatching { LocalDate.parse(seleccionarFecha) }.getOrElse { LocalDate.now() }) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -184,26 +184,15 @@ fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionVie
                 }
             }
         ) { paddingValues ->
-            EditTransactionBodyScreen(
-                paddingValues = paddingValues,
-                navController = navController,
-                mvvm = mvvm,
-                uiState = uiState,
-                seleccionarFecha = fecha.toString()
-            )
+            EditTransactionBodyScreen(paddingValues = paddingValues, mvvm = mvvm, uiState = uiState)
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EditTransactionBodyScreen(
-    paddingValues: PaddingValues,
-    navController: NavController,
-    mvvm: EditTransactionViewModel,
-    uiState: UiState,
-    seleccionarFecha: String
-) {
+fun EditTransactionBodyScreen(paddingValues: PaddingValues, mvvm: EditTransactionViewModel, uiState: UiState) {
+
     val context = LocalContext.current
     var categorias by remember { mutableStateOf<List<Categoria>>(emptyList()) }
 
@@ -221,26 +210,24 @@ fun EditTransactionBodyScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Campo para cantidad
         OutlinedTextField(
             value = uiState.cantidad,
-            onValueChange = { mvvm.actualizarDatosTransaccion(cantidad = it) },
-            label = { Text("Cantidad") },
+            onValueChange = { nuevaCantidad -> mvvm.actualizarDatosTransaccion(cantidad = nuevaCantidad) },
+            label = { Text(text = "Cantidad")},
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            leadingIcon = { Icon(Icons.Default.Money, contentDescription = null) }
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = "Icono categoria") }
         )
 
-        // Campo para descripción
         OutlinedTextField(
-            value = uiState.descripcion,
-            onValueChange = { mvvm.actualizarDatosTransaccion(descripcion = it) },
-            label = { Text("Descripción") },
+            value = uiState.categoria,
+            onValueChange = { mvvm.actualizarDatosTransaccion(uiState.cantidad, it, uiState.tipo) },
+            label = { Text(text = "Categoria")},
             modifier = Modifier.fillMaxWidth(),
-            leadingIcon = { Icon(Icons.Default.Description, contentDescription = "Icono descripción") }
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            leadingIcon = { Icon(Icons.Default.Category, contentDescription = "Icono categoria") }
         )
 
-        // Campo para la fecha
         OutlinedTextField(
             value = uiState.fecha,
             onValueChange = {},
@@ -248,23 +235,20 @@ fun EditTransactionBodyScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    val fechaActual = runCatching { LocalDate.parse(seleccionarFecha) }.getOrElse { LocalDate.now() }
-                    showDatePicker(context, fechaActual) { nuevaFecha ->
-                        mvvm.actualizarDatosTransaccion(fecha = nuevaFecha.toString())
+                    showDatePicker(context, LocalDate.parse(uiState.fecha)) { nuevaFecha ->
+                        mvvm.actualizarDatosTransaccion(fecha = nuevaFecha.format(DateTimeFormatter.ISO_DATE))
                     }
                 },
             enabled = false,
             leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "Icono calendario") }
         )
 
-        // Radio buttons para seleccionar el tipo
-        Spacer(modifier = Modifier.height(16.dp)) // Espacio adicional entre los elementos
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Opción de ingreso
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
                     selected = uiState.tipo == "ingreso",
@@ -274,7 +258,6 @@ fun EditTransactionBodyScreen(
                 Text(text = "Ingreso")
             }
 
-            // Opción de gasto
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
                     selected = uiState.tipo == "gasto",
@@ -292,7 +275,7 @@ fun EditTransactionBodyScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(categorias) { categoria ->
-                    AddTransactionViewModel().categoriaItem(
+                    categoriaItem(
                         categoria = categoria,
                         onClick = {
                             mvvm.actualizarDatosTransaccion(uiState.cantidad, categoria.nombre, uiState.tipo)
@@ -303,4 +286,5 @@ fun EditTransactionBodyScreen(
         }
     }
 }
+
 

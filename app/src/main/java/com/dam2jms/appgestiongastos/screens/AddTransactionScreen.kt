@@ -18,7 +18,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Money
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -29,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,6 +45,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -48,7 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.dam2jms.appgestiongastos.components.ScreenComponents.AuthRadioButton
+import com.dam2jms.appgestiongastos.components.ItemComponents.categoriaItem
 import com.dam2jms.appgestiongastos.data.Categoria
 import com.dam2jms.appgestiongastos.components.ScreenComponents.menu
 import com.dam2jms.appgestiongastos.data.CategoriaAPI.obtenerCategorias
@@ -63,6 +68,7 @@ import com.dam2jms.appgestiongastos.utils.Validaciones.validarDescripcion
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.math.sin
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,41 +141,54 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
     ) {
         OutlinedTextField(
             value = uiState.cantidad,
-            onValueChange = { newValue -> mvvm.actualizarDatosTransaccion(newValue, uiState.descripcion, uiState.tipo) },
+            onValueChange = { nuevaCantidad -> mvvm.actualizarDatosTransaccion(nuevaCantidad, uiState.categoria, uiState.tipo) },
             label = { Text("Cantidad") },
+            singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Cantidad") },
-            modifier = Modifier.fillMaxWidth()
+            leadingIcon = { Icon(imageVector = Icons.Filled.AttachMoney, contentDescription = "Cantidad") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         )
 
         OutlinedTextField(
-            value = uiState.descripcion,
-            onValueChange = { newValue -> mvvm.actualizarDatosTransaccion(uiState.cantidad, newValue, uiState.tipo) },
-            label = { Text("Descripcion") },
-            leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Descripcion") },
-            modifier = Modifier.fillMaxWidth()
+            value = uiState.categoria,
+            onValueChange = { nuevaCategoria -> mvvm.actualizarDatosTransaccion(uiState.cantidad, nuevaCategoria, uiState.tipo) },
+            label = { Text("Categoria") },
+            singleLine = true,
+            leadingIcon = { Icon(imageVector = Icons.Filled.Category, contentDescription = "Descripcion") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            AuthRadioButton(
-                seleccion = uiState.tipo == "ingreso",
-                onClick = {
-                    mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.descripcion, "ingreso")
-                },
-                label = "Ingreso"
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    selected = uiState.tipo == "ingreso",
+                    onClick = { mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.categoria, tipo = "ingreso") }
+                )
+                Text(
+                    text = "Ingreso",
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
 
-            AuthRadioButton(
-                seleccion = uiState.tipo == "gasto",
-                onClick = {
-                    mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.descripcion, "gasto")
-                },
-                label = "Gasto"
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    selected = uiState.tipo == "gasto",
+                    onClick = { mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.categoria, tipo = "gasto") }
+                )
+                Text(
+                    text = "Gasto",
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
         }
+
 
         if(uiState.tipo.isNotEmpty()){
             LazyColumn(
@@ -179,7 +198,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(categorias) { categoria ->
-                    mvvm.categoriaItem(
+                    categoriaItem(
                         categoria = categoria,
                         onClick = {
                             mvvm.actualizarDatosTransaccion(uiState.cantidad, categoria.nombre, uiState.tipo)
@@ -192,18 +211,18 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
         Button(
             onClick = {
                 val cantidadValida = validarCantidad(context, uiState.cantidad)
-                val descripcionValida = validarDescripcion(context, uiState.descripcion)
+                val categoriaValida = validarDescripcion(context, uiState.categoria)
                 val tipoSeleccionado = uiState.tipo.isNotEmpty()
 
                 if (!tipoSeleccionado) {
                     Toast.makeText(context, "Debe seleccionar Ingresos o Gastos", Toast.LENGTH_SHORT).show()
                 }
 
-                if (cantidadValida && descripcionValida) {
+                if (cantidadValida && categoriaValida) {
                     val transaction = Transaccion(
                         id = "",
                         cantidad = uiState.cantidad.toDoubleOrNull() ?: 0.0,
-                        descripcion = uiState.descripcion,
+                        categoria = uiState.categoria,
                         fecha = LocalDate.now().format(DateTimeFormatter.ISO_DATE),
                         tipo = uiState.tipo
                     )

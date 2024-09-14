@@ -76,8 +76,13 @@ class AddTransactionViewModel : ViewModel() {
      * @param descripcion La descripción a actualizar en el estado del UI.
      * @param tipo El tipo de transacción (por ejemplo, "ingreso" o "gasto") a actualizar en el estado del UI.
      */
-    fun actualizarDatosTransaccion(cantidad: String, descripcion: String, tipo: String) {
-        _uiState.update { it.copy(cantidad = cantidad, descripcion = descripcion, tipo = tipo) }
+    fun actualizarDatosTransaccion(cantidad: String?, categoria: String?, tipo: String) {
+        _uiState.update { it.copy(
+                cantidad = cantidad ?: uiState.value.cantidad,
+                categoria = categoria ?: uiState.value.categoria,
+                tipo = tipo
+            )
+        }
     }
 
     /**
