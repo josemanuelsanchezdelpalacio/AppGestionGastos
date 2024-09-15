@@ -1,46 +1,18 @@
 package com.dam2jms.appgestiongastos.screens
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -48,12 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.components.DatePickerComponents.showDatePicker
-import com.dam2jms.appgestiongastos.components.ItemComponents.categoriaItem
+import com.dam2jms.appgestiongastos.components.ItemComponents.TransactionItem
+import com.dam2jms.appgestiongastos.components.ScreenComponents
 import com.dam2jms.appgestiongastos.components.ScreenComponents.menu
-import com.dam2jms.appgestiongastos.data.Categoria
-import com.dam2jms.appgestiongastos.data.CategoriaAPI.obtenerCategorias
-import com.dam2jms.appgestiongastos.models.EditTransactionViewModel
+import com.dam2jms.appgestiongastos.models.HistoryViewModel
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
+import com.dam2jms.appgestiongastos.navigation.AppScreen
+import com.dam2jms.appgestiongastos.states.Transaccion
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaClaro
@@ -62,22 +35,20 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HistoryScreen(navController: NavController, mvvm: EditTransactionViewModel){
+fun HistoryScreen(navController: NavController, mvvm: HistoryViewModel){
 
     val uiState by mvvm.uiState.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    //para el menu lateral y la barra superior
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen,
-        drawerContent = {
-            menu(navController = navController)
-        }
+        drawerContent = { menu(navController = navController) }
     ) {
         Scaffold(
             topBar = {
@@ -87,46 +58,43 @@ fun HistoryScreen(navController: NavController, mvvm: EditTransactionViewModel){
                         IconButton(onClick = {
                             scope.launch {
                                 drawerState.apply {
-                                    if(isClosed) open() else close()
+                                    if (isClosed) open() else close()
                                 }
                             }
                         }) {
-                            Icon(imageVector = Icons.Default.Menu, contentDescription = "icono menu", tint = Blanco)
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "icono menu",
+                                tint = Blanco
+                            )
                         }
                     },
                     actions = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "atras", tint = Blanco)
+                        IconButton(onClick = { navController.navigate(AppScreen.HomeScreen.route) }) {
+                            Icon(
+                                Icons.Filled.ArrowBack,
+                                contentDescription = "atras",
+                                tint = Blanco
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = NaranjaOscuro)
                 )
-            },
-            content = { paddingValues ->
-                HistoryScreenBody(paddingValues = paddingValues, uiState = uiState, mvvm = mvvm)
             }
-        )
+        ) { paddingValues ->
+            HistoryScreenBody(paddingValues = paddingValues, mvvm = mvvm, uiState = uiState, navController = navController)
+        }
     }
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HistoryScreenBody(paddingValues: PaddingValues, uiState: UiState, mvvm: EditTransactionViewModel){
+fun HistoryScreenBody(paddingValues: PaddingValues, uiState: UiState, navController: NavController, mvvm: HistoryViewModel){
 
-    var busquedaCategoria by remember { mutableStateOf("") }
-    var busquedaFecha by remember { mutableStateOf("") }
-    var tipoSeleccionado by remember { mutableStateOf<String?>(null) }
-    var transaccionesFiltradas by remember { mutableStateOf(uiState.ingresos + uiState.gastos) }
-
-    var categorias by remember { mutableStateOf<List<Categoria>>(emptyList()) }
-
-    LaunchedEffect(tipoSeleccionado) {
-        if(!tipoSeleccionado.isNullOrEmpty()){
-            categorias = obtenerCategorias(tipoSeleccionado!!)
-        }
-    }
-
+    var buscarTipo by remember { mutableStateOf("fecha") }
+    var tipo by remember { mutableStateOf("todos")}
+    var buscarFecha by remember { mutableStateOf(LocalDate.now()) }
+    var buscarCategoria by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     Column(
@@ -135,129 +103,104 @@ fun HistoryScreenBody(paddingValues: PaddingValues, uiState: UiState, mvvm: Edit
             .padding(paddingValues)
             .padding(16.dp)
     ) {
-        OutlinedTextField(
-            value = busquedaCategoria,
-            onValueChange = { busquedaCategoria = it },
-            label = { Text("Buscar por categoria") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        )
-
-        OutlinedTextField(
-            value = uiState.fecha,
-            onValueChange = {},
-            label = { Text("Buscar por fecha (dd/MM/yyyy)") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    showDatePicker(context, LocalDate.parse(uiState.fecha)) { nuevaFecha ->
-                        mvvm.actualizarDatosTransaccion(fecha = nuevaFecha.format(DateTimeFormatter.ISO_DATE))
-                    }
-                },
-            enabled = false,
-            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "Icono calendario") }
-        )
-
-        Row(
+        Row (
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = tipoSeleccionado == "ingreso",
-                    onClick = { tipoSeleccionado == "ingreso" },
-                    colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
-                )
-                Text(text = "Ingreso")
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = tipoSeleccionado == "gasto",
-                    onClick = { tipoSeleccionado == "gasto" },
-                    colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
-                )
-                Text(text = "Gasto")
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = tipoSeleccionado == null,
-                    onClick = { tipoSeleccionado == null },
-                    colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
-                )
-                Text(text = "Todos")
-            }
+        ){
+            RadioButtonLabel(value = "fecha", label = "Fecha", selectedValue = buscarTipo) { buscarTipo = it }
+            RadioButtonLabel(value = "categoria", label = "Categoria", selectedValue = buscarTipo) { buscarCategoria = it }
         }
 
-        if(!tipoSeleccionado.isNullOrEmpty()){
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            RadioButtonLabel(value = "todos", label = "Todos", selectedValue = tipo) { tipo = it }
+            RadioButtonLabel(value = "ingreso", label = "Ingresos", selectedValue = tipo) { tipo = it }
+            RadioButtonLabel(value = "gasto", label = "Gastos", selectedValue = tipo) { tipo = it }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if(buscarTipo == "fecha") {
+            Button(onClick = {
+                showDatePicker(context, buscarFecha) { buscarFecha = it }
+            },
+                colors = ButtonDefaults.buttonColors(containerColor = NaranjaClaro)
+            ){
+                Text("Seleccionar fecha: ${buscarFecha.format(DateTimeFormatter.ISO_DATE)}")
+            }
+        }else{
+            OutlinedTextField(
+                value = buscarCategoria,
+                onValueChange = { buscarCategoria = it},
+                label = { Text(text = "Buscar por categoria")},
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = {
+            mvvm.buscarTransacciones(buscarTipo, tipo, buscarFecha, buscarCategoria)
+        },
+            colors = ButtonDefaults.buttonColors(containerColor = NaranjaClaro),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Buscar")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+
+        if (uiState.transaccionesFiltradas.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ){
-                items(categorias){ categoria ->
-                    categoriaItem(
-                        categoria = categoria,
-                        onClick = {
-                            busquedaCategoria = categoria.nombre
-                        }
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 64.dp)
+            ) {
+                items(uiState.transaccionesFiltradas) { transaccion ->
+                    TransactionItem(
+                        transaccion = transaccion,
+                        navController = navController,
+                        mvvm = TransactionViewModel(),
+                        context = LocalContext.current
                     )
                 }
             }
-        }else{
-            Text(
-                text = "No hay transacciones que coincidan con los filtros",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-
-        Button(
-            onClick = {
-                val fechaFiltro = runCatching { LocalDate.parse(busquedaFecha, DateTimeFormatter.ofPattern("dd/MM/yyyy")) }.getOrNull()
-
-                transaccionesFiltradas = when(tipoSeleccionado){
-                    "ingreso" -> uiState.ingresos
-                    "gasto" -> uiState.gastos
-                    else -> uiState.ingresos + uiState.gastos
-                }.filter { transaccion ->
-                    (busquedaCategoria.isEmpty() || transaccion.categoria.contains(busquedaCategoria, ignoreCase = true)) &&
-                            (fechaFiltro == null || transaccion.fecha == fechaFiltro.format(DateTimeFormatter.ISO_DATE))
-                }
-            },
-            modifier = Modifier
-                .height(56.dp)
-                .fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = NaranjaClaro,
-                contentColor = Blanco
-            )
-        ) {
-            Text(
-                text = "Filtrar",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-
-    //mostrar resultados filtrados
-    if (transaccionesFiltradas.isNotEmpty()) {
-        LazyColumn {
-            items(transaccionesFiltradas) { transaccion ->
-                Text(text = "${transaccion.tipo}: ${transaccion.cantidad} - ${transaccion.categoria} (${transaccion.fecha})")
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 64.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No hay transacciones",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = NaranjaClaro,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
-    } else {
-        Text(
-            text = "No hay transacciones que coincidan con los filtros",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(16.dp)
-        )
     }
 }
+
+@Composable
+fun RadioButtonLabel(value: String, label: String, selectedValue: String, onValueSelected: (String) -> Unit){
+
+    Row(verticalAlignment = Alignment.CenterVertically){
+
+        RadioButton(
+            selected = selectedValue == value,
+            onClick = { onValueSelected(value) },
+            colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
+        )
+        Text(label)
+    }
+}
+
+
 

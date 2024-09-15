@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.components.DatePickerComponents.showDatePicker
+import com.dam2jms.appgestiongastos.components.ItemComponents.TransactionItem
 import com.dam2jms.appgestiongastos.components.ScreenComponents.menu
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
@@ -288,102 +289,3 @@ fun TransactionsScreenBody(
         }
     }
 }
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun TransactionItem(
-    transaccion: Transaccion,
-    navController: NavController,
-    mvvm: TransactionViewModel,
-    context: Context
-) {
-
-    var expanded by remember { mutableStateOf(false) }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clickable { expanded = !expanded }
-            .height(IntrinsicSize.Max)
-            .border(1.dp, NaranjaClaro, shape = RoundedCornerShape(8.dp)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Categoria: ${transaccion.categoria}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Cantidad: ${transaccion.cantidad}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Fecha: ${transaccion.fecha}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Tipo: ${transaccion.tipo.capitalize()}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-
-            if (expanded)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Button(
-                        onClick = {
-                            Log.d(
-                                "TransactionItem",
-                                "Eliminando transacción con ID: ${transaccion.id}"
-                            )
-                            mvvm.eliminarTransaccionExistente(
-                                collection = if (transaccion.tipo == "ingreso") "ingresos" else "gastos",
-                                transaccionId = transaccion.id,
-                                context = context
-                            )
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = RojoClaro),
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Blanco)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Eliminar", color = Blanco)
-                    }
-
-                    Button(
-                        onClick = {
-                            navController.navigate(
-                                AppScreen.EditTransactionScreen.createRoute(
-                                    transaccion.id
-                                )
-                            )
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = RojoClaro),
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = "Modificar", tint = Blanco)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Modificar", color = Blanco)
-                    }
-                }
-        }
-    }
-}
-
-

@@ -54,7 +54,7 @@ fun AppNavigation(){
             AddTransactionScreen(navController, mvvm = AddTransactionViewModel())
         }
         composable(AppScreen.HistoryScreen.route){
-            HistoryScreen(navController, mvvm = EditTransactionViewModel())
+            HistoryScreen(navController, mvvm = HistoryViewModel())
         }
         composable(
             route = AppScreen.EditTransactionScreen.route,

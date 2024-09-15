@@ -24,7 +24,9 @@ data class UiState(
     var cantidad: String = "",
     var categoria: String = "",
     var fecha: String = "",
-    var tipo: String = ""
+    var tipo: String = "",
+
+    val transaccionesFiltradas: List<Transaccion> = emptyList()
 
 )
 
