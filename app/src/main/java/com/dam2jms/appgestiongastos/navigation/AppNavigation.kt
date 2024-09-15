@@ -12,6 +12,7 @@ import com.dam2jms.appgestiongastos.data.CategoriaAPI
 import com.dam2jms.appgestiongastos.models.AddTransactionViewModel
 import com.dam2jms.appgestiongastos.models.CurrencyViewModel
 import com.dam2jms.appgestiongastos.models.EditTransactionViewModel
+import com.dam2jms.appgestiongastos.models.HistoryViewModel
 import com.dam2jms.appgestiongastos.models.HomeViewModel
 import com.dam2jms.appgestiongastos.models.LoginViewModel
 import com.dam2jms.appgestiongastos.models.RegisterViewModel
