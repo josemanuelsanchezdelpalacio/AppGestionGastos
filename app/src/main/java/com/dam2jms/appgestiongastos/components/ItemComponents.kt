@@ -44,9 +44,10 @@ object ItemComponents {
      * **/
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
-    fun TransactionItem(transaccion: Transaccion, navController: NavController, mvvm: TransactionViewModel, context: Context){
+    fun TransactionItem(transaccion: Transaccion, navController: NavController, mvvm: TransactionViewModel, context: Context) {
 
         var expanded by remember { mutableStateOf(false) }
+        var validarElimar by remember { mutableStateOf(false) }
 
         Card(
             modifier = Modifier
@@ -57,59 +58,108 @@ object ItemComponents {
             elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ){
-           Column(
-               modifier = Modifier
-                   .fillMaxSize()
-                   .padding(16.dp)
-           ) {
-               Text(
-                   text = "Categoria: ${transaccion.categoria}",
-                   style = MaterialTheme.typography.bodyLarge,
-                   fontWeight = FontWeight.SemiBold,
-               )
-               Spacer(modifier = Modifier.width(4.dp))
-               Text(
-                   text = "Cantidad: ${transaccion.cantidad}",
-                   style = MaterialTheme.typography.bodyLarge,
-                   fontWeight = FontWeight.SemiBold,
-               )
-               Spacer(modifier = Modifier.width(4.dp))
-               Text(
-                   text = "Fecha: ${transaccion.fecha}",
-                   style = MaterialTheme.typography.bodyLarge,
-                   fontWeight = FontWeight.SemiBold,
-               )
-               Spacer(modifier = Modifier.width(4.dp))
-               Text(
-                   text = "Tipo: ${transaccion.tipo.capitalize()}",
-                   style = MaterialTheme.typography.bodyLarge,
-                   fontWeight = FontWeight.SemiBold,
-               )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Categoria: ${transaccion.categoria}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Cantidad: ${transaccion.cantidad}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Fecha: ${transaccion.fecha}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Tipo: ${transaccion.tipo.capitalize()}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
 
-               if(expanded){
-                   Row (
-                       modifier = Modifier.fillMaxWidth(),
-                       horizontalArrangement = Arrangement.End
-                   ){
-                       Button(
-                           onClick = {
-                               mvvm.eliminarTransaccionExistente(
-                                   collection = if(transaccion.tipo == "ingreso") "ingresos" else "gastos",
-                                   transaccionId = transaccion.id,
-                                   context = context
-                               )
-                           },
-                           colors = ButtonDefaults.buttonColors(containerColor = RojoClaro),
-                           modifier = Modifier.padding(end = 8.dp)
-                       ) {
-                           Icon(Icons.Default.Edit, contentDescription = "modificar", tint = Blanco)
-                           Spacer(modifier = Modifier.width(4.dp))
-                           Text(text = "Modificar", color = Blanco)
-                       }
-                   }
-               }
-           }
+                if (expanded) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Absolute.SpaceBetween
+                    ) {
+                        Button(
+                            onClick = {
+                                navController.navigate(
+                                    AppScreen.EditTransactionScreen.createRoute(
+                                        transaccion.id
+                                    )
+                                )
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = NaranjaClaro),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "modificar",
+                                tint = Blanco
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Modificar", color = Blanco)
+                        }
+
+                        Button(
+                            onClick = { validarElimar = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = RojoClaro),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "eliminar",
+                                tint = Blanco
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Eliminar", color = Blanco)
+                        }
+                    }
+                }
+            }
+        }
+
+        if (validarElimar) {
+            AlertDialog(
+                onDismissRequest = { validarElimar = false },
+                title = { Text(text = "Confirmar eliminacion") },
+                text = { Text(text = "¿Estas seguro de eliminar esta transaccion?") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            mvvm.eliminarTransaccionExistente(
+                                collection = if (transaccion.tipo == "ingreso") "ingresos" else "gastos",
+                                transaccionId = transaccion.id,
+                                context = context
+                            )
+                            validarElimar = false
+                            mvvm.leerTransacciones()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = RojoClaro)
+                    ) {
+                        Text(text = "Eliminar")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { validarElimar = false }) {
+                        Text(text = "Cancelar")
+                    }
+                }
+            )
         }
     }
 

@@ -117,8 +117,12 @@ fun HomeScreen(navController: NavController, mvvm: HomeViewModel, currencyViewMo
                         }
                     },
                     actions = {
-                        IconButton(onClick = { navController.navigate(AppScreen.HomeScreen.route) }) {
-                            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "atras", tint = Blanco)
+                        IconButton(onClick = { navController.navigate(AppScreen.LoginScreen.route) }) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = "atras",
+                                tint = Blanco
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = NaranjaOscuro)

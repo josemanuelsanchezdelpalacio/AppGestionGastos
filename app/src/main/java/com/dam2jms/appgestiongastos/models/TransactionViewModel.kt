@@ -69,7 +69,7 @@ class TransactionViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    // Inicializo el ViewModel y leo las transacciones al crear el ViewModel
+    //inicializo el ViewModel y leo las transacciones al crear el ViewModel
     init {
         leerTransacciones()
     }
@@ -101,33 +101,21 @@ class TransactionViewModel : ViewModel() {
                 val gastos = transacciones.filter { it.tipo == "gasto" }
                 actualizarTransaccion(ingresos, gastos)
             },
-            onFailure = {
-                // Manejo de errores
-            }
+            onFailure = {}
         )
     }
 
     /** Método para eliminar una transacción */
     fun eliminarTransaccionExistente(collection: String, transaccionId: String, context: Context) {
-        // Validar que el transaccionId no esté vacío
-        if (transaccionId.isBlank()) {
-            Toast.makeText(context, "ID de transacción inválido", Toast.LENGTH_SHORT).show()
-            Log.e("EliminarTransaccion", "transaccionId está vacío o en blanco")
-            return
-        }
-
-        Log.d("EliminarTransaccion", "Eliminando transacción con ID: $transaccionId en colección: $collection")
-
         FireStoreUtil.eliminarTransaccion(
             collection, transaccionId,
             onSuccess = {
-                Toast.makeText(context, "Transacción eliminada correctamente", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Transaccion eliminada correctamente", Toast.LENGTH_SHORT).show()
+                leerTransacciones()
             },
             onFailure = { exception ->
-                // Mostrar el mensaje de error detallado
                 val errorMsg = exception.localizedMessage ?: "Error desconocido"
-                Toast.makeText(context, "Error al eliminar la transacción: $errorMsg", Toast.LENGTH_LONG).show()
-                Log.e("EliminarTransaccion", "Error al eliminar transacción: $errorMsg")
+                Toast.makeText(context, "Error al eliminar la transaccion: $errorMsg", Toast.LENGTH_SHORT).show()
             }
         )
     }

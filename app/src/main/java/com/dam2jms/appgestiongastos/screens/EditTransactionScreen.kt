@@ -85,24 +85,28 @@ import com.dam2jms.appgestiongastos.utils.Validaciones.validarDescripcion
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionViewModel, seleccionarFecha: String){
-
+fun EditTransactionScreen(
+    navController: NavController,
+    mvvm: EditTransactionViewModel,
+    seleccionarFecha: String
+) {
     val uiState by mvvm.uiState.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    //convierto seleccionarFecha a LocalDate para usarlo en el selector de fecha
+    // Convierte seleccionarFecha a LocalDate para usarlo en el selector de fecha
     var fecha by remember { mutableStateOf(runCatching { LocalDate.parse(seleccionarFecha) }.getOrElse { LocalDate.now() }) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen,
-        drawerContent = { ScreenComponents.menu(navController = navController) }
+        drawerContent = { menu(navController = navController) }
     ) {
         Scaffold(
             topBar = {
@@ -152,13 +156,8 @@ fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionVie
                         mvvm.modificarTransaccion(
                             transaccionId = uiState.id,
                             collection = if (uiState.tipo == "ingreso") "ingresos" else "gastos",
-                            onSuccess = {
-                                Toast.makeText(context, "Transacción modificada", Toast.LENGTH_SHORT).show()
-                                navController.navigateUp()
-                            },
-                            onFailure = { e ->
-                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
+                            context = context,
+                            navController = navController
                         )
                     },
                     containerColor = NaranjaClaro,
@@ -235,7 +234,16 @@ fun EditTransactionBodyScreen(paddingValues: PaddingValues, mvvm: EditTransactio
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    showDatePicker(context, LocalDate.parse(uiState.fecha)) { nuevaFecha ->
+                    val initialDate = if (uiState.fecha.isNotBlank()) {
+                        try {
+                            LocalDate.parse(uiState.fecha)
+                        } catch (e: DateTimeParseException) {
+                            LocalDate.now()
+                        }
+                    } else {
+                        LocalDate.now()
+                    }
+                    showDatePicker(context, initialDate) { nuevaFecha ->
                         mvvm.actualizarDatosTransaccion(fecha = nuevaFecha.format(DateTimeFormatter.ISO_DATE))
                     }
                 },
