@@ -36,9 +36,27 @@ class RegisterViewModel : AuthViewModel() {
         }
 
         //crear usuario en Firestore
+        auth.fetchSignInMethodsForEmail(email)
+            .addOnCompleteListener { task ->
+                if(task.isSuccessful) {
+                    val signInMethods = task.result?.signInMethods
+                    if (signInMethods.isNullOrEmpty()) {
+                        Toast.makeText(context, "El correo no esta registrado. Utilize un correo existente", Toast.LENGTH_SHORT).show()
+                    } else {
+                        crearUsuarioFirebase(email, password, context)
+                    }
+                }else {
+                    Toast.makeText(context, "Error verificando el correo", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun crearUsuarioFirebase(email: String, password: String, context: Context){
+
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if(task.isSuccessful){
+
                     //obtengo el ID del usuario autenticado
                     val userId = auth.currentUser?.uid?: return@addOnCompleteListener
 
@@ -60,8 +78,7 @@ class RegisterViewModel : AuthViewModel() {
                             Toast.makeText(context, "Error al guardar el usuario en FireStore", Toast.LENGTH_SHORT).show()
                         }
                 }else{
-                    val errorMessage = task.exception?.localizedMessage ?: "Error al crear el usuario"
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Error al crear el usuario", Toast.LENGTH_LONG).show()
                 }
             }
     }

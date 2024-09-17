@@ -1,6 +1,7 @@
 package com.dam2jms.appgestiongastos.utils
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.dam2jms.appgestiongastos.states.Transaccion
 import com.google.firebase.auth.FirebaseAuth
@@ -99,15 +100,27 @@ object FireStoreUtil {
      * @param onFailure Función a ejecutar en caso de error
      */
     fun modificarTransaccion(collection: String, transaccionId: String, transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-        val userId = Firebase.auth.currentUser?.uid ?: return
+        val userId = Firebase.auth.currentUser?.uid
+        if (userId == null) {
+            onFailure(IllegalStateException("Usuario no autenticado"))
+            return
+        }
 
-        db.collection("users")
+        // Construimos la referencia correcta al documento
+        val documentReference = db.collection("users")
             .document(userId)
             .collection(collection)
             .document(transaccionId)
-            .set(transaccion)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { onFailure(it) }
+
+        documentReference.set(transaccion)
+            .addOnSuccessListener {
+                Log.d("FireStoreUtil", "Transacción modificada con éxito")
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                Log.e("FireStoreUtil", "Error al modificar transacción en Firestore", e)
+                onFailure(e)
+            }
     }
 }
 

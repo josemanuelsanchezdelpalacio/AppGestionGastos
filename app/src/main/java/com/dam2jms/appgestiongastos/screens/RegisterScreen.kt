@@ -27,9 +27,11 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -107,6 +109,10 @@ fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavControlle
             contentDescription = "icono app",
             modifier = Modifier.size(200.dp)
         )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "Registrate", style = MaterialTheme.typography.headlineMedium, color = Blanco)
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = uiState.email,
@@ -151,7 +157,6 @@ fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavControlle
             onClick = {
                 if (uiState.email.isNotEmpty() && uiState.password.isNotEmpty() && validarCorreo(context, uiState.email) && validaContraseña(context, uiState.password)) {
                     mvvm.registrarUsuario(uiState.email, uiState.password, context)
-                    navController.navigate(AppScreen.LoginScreen.route)
                 } else {
                     Toast.makeText(context, "Ningún campo puede estar vacío", Toast.LENGTH_SHORT).show()
                 }
@@ -163,6 +168,15 @@ fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavControlle
             colors = ButtonDefaults.buttonColors(containerColor = Blanco)
         ) {
             Text(text = "Registrarse", color = NaranjaOscuro)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextButton(
+            onClick = { navController.navigate(AppScreen.LoginScreen.route) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "¿Ya tienes una cuenta? Inicia sesion", color = Blanco)
         }
     }
 

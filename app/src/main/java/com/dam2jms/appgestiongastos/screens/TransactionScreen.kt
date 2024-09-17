@@ -80,11 +80,7 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TransactionScreen(
-    navController: NavController,
-    mvvm: TransactionViewModel,
-    seleccionarFecha: String
-) {
+fun TransactionScreen(navController: NavController, mvvm: TransactionViewModel, seleccionarFecha: String) {
 
     val uiState by mvvm.uiState.collectAsState()
 

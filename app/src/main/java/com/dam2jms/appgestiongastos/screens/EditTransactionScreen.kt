@@ -2,6 +2,7 @@ package com.dam2jms.appgestiongastos.screens
 
 import android.content.Context
 import android.os.Build
+import android.widget.RadioButton
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
@@ -25,8 +26,10 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -83,6 +86,7 @@ import com.dam2jms.appgestiongastos.ui.theme.NaranjaOscuro
 import com.dam2jms.appgestiongastos.utils.Validaciones.validarCantidad
 import com.dam2jms.appgestiongastos.utils.Validaciones.validarDescripcion
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -90,18 +94,14 @@ import java.time.format.DateTimeParseException
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EditTransactionScreen(
-    navController: NavController,
-    mvvm: EditTransactionViewModel,
-    seleccionarFecha: String
-) {
+fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionViewModel){
+
     val uiState by mvvm.uiState.collectAsState()
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
-    // Convierte seleccionarFecha a LocalDate para usarlo en el selector de fecha
-    var fecha by remember { mutableStateOf(runCatching { LocalDate.parse(seleccionarFecha) }.getOrElse { LocalDate.now() }) }
+    val context = LocalContext.current
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -111,7 +111,7 @@ fun EditTransactionScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("TRANSACCIONES", color = Blanco) },
+                    title = { Text("Modificar transaccion", color = Blanco) },
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch {
@@ -128,19 +128,9 @@ fun EditTransactionScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = {
-                            showDatePicker(context, fecha) { nuevaFecha ->
-                                fecha = nuevaFecha
-                            }
-                        }) {
+                        IconButton(onClick = { navController.navigate(AppScreen.TransactionScreen.route) }) {
                             Icon(
-                                Icons.Default.CalendarToday,
-                                contentDescription = "seleccionarFecha"
-                            )
-                        }
-                        IconButton(onClick = { navController.navigate(AppScreen.HomeScreen.route) }) {
-                            Icon(
-                                Icons.Filled.ArrowBack,
+                                imageVector = Icons.Filled.ArrowBack,
                                 contentDescription = "atras",
                                 tint = Blanco
                             )
@@ -150,47 +140,44 @@ fun EditTransactionScreen(
                 )
             },
             floatingActionButtonPosition = FabPosition.Center,
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        mvvm.modificarTransaccion(
-                            transaccionId = uiState.id,
-                            collection = if (uiState.tipo == "ingreso") "ingresos" else "gastos",
-                            context = context,
-                            navController = navController
-                        )
-                    },
-                    containerColor = NaranjaClaro,
-                    contentColor = Blanco,
-                    elevation = FloatingActionButtonDefaults.elevation(8.dp)
-                ) {
-                    Icon(
-                        Icons.Filled.Check,
-                        contentDescription = "Guardar cambios",
-                        tint = Blanco
-                    )
-                }
-            },
             bottomBar = {
                 BottomAppBar(
-                    containerColor = NaranjaOscuro
-                ) {
-                    Text(
-                        text = "Modifica los detalles y guarda los cambios",
-                        modifier = Modifier.padding(16.dp),
-                        color = Blanco
-                    )
-                }
+                    containerColor = NaranjaOscuro,
+                    content = {
+                        Spacer(modifier = Modifier.weight(1f))
+                        FloatingActionButton(
+                            onClick = {
+                                mvvm.modificarTransaccion(
+                                    transaccionId = uiState.id,
+                                    collection = if(uiState.tipo == "ingreso") "ingresos" else "gastos",
+                                    context = context,
+                                    navController = navController
+                                )
+                            },
+                            containerColor = NaranjaClaro,
+                            contentColor = Blanco,
+                            elevation = FloatingActionButtonDefaults.elevation(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Save,
+                                contentDescription = "Guardar cambios",
+                                tint = Blanco
+                            )
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                )
             }
         ) { paddingValues ->
-            EditTransactionBodyScreen(paddingValues = paddingValues, mvvm = mvvm, uiState = uiState)
+            EditTransactionScreenBody(paddingValues = paddingValues, mvvm = mvvm, uiState = uiState)
         }
     }
+
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EditTransactionBodyScreen(paddingValues: PaddingValues, mvvm: EditTransactionViewModel, uiState: UiState) {
+fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactionViewModel, uiState: UiState){
 
     val context = LocalContext.current
     var categorias by remember { mutableStateOf<List<Categoria>>(emptyList()) }
@@ -211,87 +198,95 @@ fun EditTransactionBodyScreen(paddingValues: PaddingValues, mvvm: EditTransactio
     ) {
         OutlinedTextField(
             value = uiState.cantidad,
-            onValueChange = { nuevaCantidad -> mvvm.actualizarDatosTransaccion(cantidad = nuevaCantidad) },
+            onValueChange = { nuevaCantidad -> mvvm.actualizarDatosTransaccion(cantidad = nuevaCantidad)},
             label = { Text(text = "Cantidad")},
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = "Icono categoria") }
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = "icono cantidad")}
         )
 
         OutlinedTextField(
             value = uiState.categoria,
-            onValueChange = { mvvm.actualizarDatosTransaccion(uiState.cantidad, it, uiState.tipo) },
+            onValueChange = { mvvm.actualizarDatosTransaccion(uiState.cantidad, it, uiState.tipo)},
             label = { Text(text = "Categoria")},
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            leadingIcon = { Icon(Icons.Default.Category, contentDescription = "Icono categoria") }
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            leadingIcon = { Icon(Icons.Default.Category, contentDescription = "icono categoria")}
         )
 
         OutlinedTextField(
             value = uiState.fecha,
             onValueChange = {},
-            label = { Text("Fecha") },
+            label = { Text(text = "Fecha")},
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    val initialDate = if (uiState.fecha.isNotBlank()) {
+                    val fechaInicial = if (uiState.fecha.isNotBlank()) {
                         try {
                             LocalDate.parse(uiState.fecha)
                         } catch (e: DateTimeParseException) {
                             LocalDate.now()
                         }
-                    } else {
+                    }else {
                         LocalDate.now()
                     }
-                    showDatePicker(context, initialDate) { nuevaFecha ->
-                        mvvm.actualizarDatosTransaccion(fecha = nuevaFecha.format(DateTimeFormatter.ISO_DATE))
+                    showDatePicker(context, fechaInicial) { nuevaFecha ->
+                        mvvm.actualizarDatosTransaccion(
+                            fecha = nuevaFecha.format(
+                                DateTimeFormatter.ISO_DATE
+                            )
+                        )
                     }
                 },
             enabled = false,
-            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "Icono calendario") }
+            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "icono calendario")}
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
+        Row (
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = uiState.tipo == "ingreso",
-                    onClick = { mvvm.actualizarDatosTransaccion(tipo = "ingreso") },
-                    colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
-                )
-                Text(text = "Ingreso")
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = uiState.tipo == "gasto",
-                    onClick = { mvvm.actualizarDatosTransaccion(tipo = "gasto") },
-                    colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
-                )
-                Text(text = "Gasto")
-            }
+        ){
+            RadioButtonWithLabel(
+                label = "ingreso",
+                selected = uiState.tipo == "ingreso",
+                onClick = { mvvm.actualizarDatosTransaccion(tipo = "ingreso")}
+            )
+            RadioButtonWithLabel(
+                label = "gasto",
+                selected = uiState.tipo == "gasto",
+                onClick = { mvvm.actualizarDatosTransaccion(tipo = "gasto")}
+            )
         }
 
         if(uiState.tipo.isNotEmpty()){
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(categorias) { categoria ->
-                    categoriaItem(
-                        categoria = categoria,
-                        onClick = {
-                            mvvm.actualizarDatosTransaccion(uiState.cantidad, categoria.nombre, uiState.tipo)
-                        }
-                    )
+                items(categorias){ categoria ->
+                    categoriaItem(categoria = categoria){
+                        mvvm.actualizarDatosTransaccion(uiState.cantidad, categoria.nombre, uiState.tipo)
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun RadioButtonWithLabel(label: String, selected: Boolean, onClick: () -> Unit){
+
+    Row(verticalAlignment = Alignment.CenterVertically){
+
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
+        )
+        Text(text = label)
+
     }
 }
 

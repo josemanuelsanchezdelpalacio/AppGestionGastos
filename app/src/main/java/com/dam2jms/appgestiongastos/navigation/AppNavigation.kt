@@ -57,13 +57,11 @@ fun AppNavigation(){
         composable(AppScreen.HistoryScreen.route){
             HistoryScreen(navController, mvvm = HistoryViewModel())
         }
-        composable(
-            route = AppScreen.EditTransactionScreen.route,
+        composable(AppScreen.EditTransactionScreen.route,
             arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val transactionId = backStackEntry.arguments?.getString("transactionId")?: ""
-            val seleccionarFecha = LocalDate.now().toString()
-            EditTransactionScreen(navController, mvvm = EditTransactionViewModel(), seleccionarFecha = seleccionarFecha)
+            val transactionId = backStackEntry.arguments?.getString("transactionId") ?: ""
+            EditTransactionScreen(navController = navController, mvvm = EditTransactionViewModel())
         }
     }
 }

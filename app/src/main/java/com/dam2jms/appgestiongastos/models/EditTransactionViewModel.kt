@@ -52,51 +52,67 @@ class EditTransactionViewModel : ViewModel() {
     }
 
 
-    // Método para modificar la transacción usando Firestore
     fun modificarTransaccion(
         transaccionId: String,
         collection: String,
         context: Context,
         navController: NavController
     ) {
-        val cantidadDouble = _uiState.value.cantidad.toDoubleOrNull() ?: 0.0
-
-        // Validar la cantidad
-        if (cantidadDouble == 0.0 && _uiState.value.cantidad.isNotBlank()) {
-            Toast.makeText(context, "Error: La cantidad no es válida", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Validar que los campos no estén vacíos
-        if (_uiState.value.categoria.isBlank() || _uiState.value.tipo.isBlank()) {
-            Toast.makeText(context, "Por favor, completa todos los campos.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
         try {
+            // Validación de datos
+            val cantidad = _uiState.value.cantidad.toDoubleOrNull()
+                ?: throw IllegalArgumentException("La cantidad debe ser un número válido")
+
+            if (cantidad <= 0) {
+                throw IllegalArgumentException("La cantidad debe ser mayor que cero")
+            }
+
+            if (_uiState.value.categoria.isBlank()) {
+                throw IllegalArgumentException("La categoría no puede estar vacía")
+            }
+
+            if (_uiState.value.fecha.isBlank()) {
+                throw IllegalArgumentException("La fecha no puede estar vacía")
+            }
+
+            if (_uiState.value.tipo !in listOf("ingreso", "gasto")) {
+                throw IllegalArgumentException("El tipo debe ser 'ingreso' o 'gasto'")
+            }
+
+            // Crear el objeto de transacción con los datos validados
             val transaccion = Transaccion(
                 id = transaccionId,
-                cantidad = cantidadDouble,
+                cantidad = cantidad,
                 categoria = _uiState.value.categoria,
                 fecha = _uiState.value.fecha,
                 tipo = _uiState.value.tipo
             )
 
+            // Determinar la colección correcta para Firestore (ingresos o gastos)
+            val coleccionCorrecta = if (_uiState.value.tipo == "ingreso") "ingresos" else "gastos"
+
             FireStoreUtil.modificarTransaccion(
-                collection = collection,
+                collection = coleccionCorrecta,
                 transaccionId = transaccionId,
                 transaccion = transaccion,
                 onSuccess = {
-                    Toast.makeText(context, "Transacción modificada", Toast.LENGTH_SHORT).show()
-                    navController.navigateUp()
+                    Log.d("EditTransactionViewModel", "Transacción modificada con éxito")
+                    Toast.makeText(context, "Transacción modificada con éxito", Toast.LENGTH_SHORT).show()
+                    navController.navigateUp() // Navegar hacia atrás después de modificar
                 },
                 onFailure = { e ->
-                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("EditTransactionViewModel", "Error al modificar transacción", e)
+                    Toast.makeText(context, "Error al modificar: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             )
+        } catch (e: IllegalArgumentException) {
+            Log.e("EditTransactionViewModel", "Datos de transacción inválidos", e)
+            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
-            Toast.makeText(context, "Error inesperado: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e("EditTransactionViewModel", "Error inesperado al modificar transacción", e)
+            Toast.makeText(context, "Error inesperado: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
+
 }
 
