@@ -21,7 +21,7 @@ data class UiState(
 
     //para transaccionScreen
     var id: String = "",
-    var cantidad: String = "",
+    var cantidad: Double = 0.0,
     var categoria: String = "",
     var fecha: String = "",
     var tipo: String = "",

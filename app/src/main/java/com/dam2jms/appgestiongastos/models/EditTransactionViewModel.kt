@@ -40,7 +40,7 @@ class EditTransactionViewModel : ViewModel() {
         _uiState.update { currentState ->
             when (campo) {
                 "fecha" -> currentState.copy(fecha = valor as String)
-                "cantidad" -> currentState.copy(cantidad = valor as Double)
+                "cantidad" -> currentState.copy(cantidad = (valor as String).toDoubleOrNull() ?: 0.0)
                 "categoria" -> currentState.copy(categoria = valor as String)
                 "tipo" -> currentState.copy(tipo = valor as String)
                 else -> currentState
@@ -49,11 +49,11 @@ class EditTransactionViewModel : ViewModel() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun modificarTransaccion(transaccionId: String, collection: String, context: Context, navController: NavController) {
+    fun modificarTransaccion(collection: String, context: Context, navController: NavController) {
         viewModelScope.launch {
             try {
                 val transaccionActualizada = Transaccion(
-                    id = transaccionId,
+                    id = _uiState.value.id,
                     fecha = _uiState.value.fecha,
                     cantidad = _uiState.value.cantidad,
                     categoria = _uiState.value.categoria,
