@@ -10,11 +10,8 @@ import java.net.URL
 
 class CurrencyConverter {
 
-    // Clave para acceder al servicio de ExchangeRate (sin la barra final)
-    private val apiKey = "b4852e13a1565d9441dfb608"
-
     //url para las solicitudes a la api
-    private val baseURL = "https://v6.exchangerate-api.com/v6/$apiKey"
+    private val baseURL = "https://api.frankfurter.app"
 
     /**metodo que obtiene las tasas de cambio para una moneda
      * @param url para la solicitud
@@ -26,13 +23,10 @@ class CurrencyConverter {
     suspend fun obtenerTasasMonedas(moneda: String): Map<String, Double>{
         return withContext(Dispatchers.IO){
             try {
-                val url = URL("$baseURL/latest/$moneda")
+                val url = URL("$baseURL/latest?from=$moneda")
                 val respuesta = url.readText()
                 val jsonObject = JSONObject(respuesta)
-                if (jsonObject.has("error") && jsonObject.getString("error") == "quota-reached") {
-                    throw Exception("Limite de solicitudes alcanzado")
-                }
-                val tasas = jsonObject.getJSONObject("conversion_rates")
+                val tasas = jsonObject.getJSONObject("rates")
                 tasas.keys().asSequence().associateWith { tasas.getDouble(it) }
             } catch (e: FileNotFoundException) {
                 Log.e("CurrencyConverter", "URL no encontrada: ${e.message}")
@@ -49,9 +43,17 @@ class CurrencyConverter {
      * @param tasa obtengo la tasa de cambio para la moneda de destino
      * @return devuelve la cantidad convertida */
     suspend fun convertirMoneda(cantidad: Double, monedaOrigen: String, monedaDestino: String): Double {
-        val tasas = obtenerTasasMonedas(monedaOrigen)
-        val tasa = tasas[monedaDestino] ?: throw Exception("Currency not found")
-        return cantidad * tasa
+        return withContext(Dispatchers.IO){
+            try {
+                val url = URL("$baseURL/laters?amount=$cantidad&from=$monedaOrigen&to=$monedaDestino")
+                val respuesta = url.readText()
+                val jsonObject = JSONObject(respuesta)
+                jsonObject.getJSONObject("rates").getDouble(monedaDestino)
+            }catch (e: Exception){
+                Log.e("CurrencyConverter", "Error en la conversion: ${e.message}")
+                0.0
+            }
+        }
     }
 }
 

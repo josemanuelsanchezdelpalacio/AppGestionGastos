@@ -92,36 +92,30 @@ object FireStoreUtil {
     }
 
     /**
-     * Modifica una transacción existente en Firestore.
+     * Actualiza una transacción existente en Firestore.
+     *
      * @param collection Colección de la transacción ("ingresos" o "gastos")
-     * @param transaccionId ID de la transacción a modificar
-     * @param transaccion Datos de la transacción actualizada
+     * @param transaccion La transacción actualizada
      * @param onSuccess Función a ejecutar en caso de éxito
      * @param onFailure Función a ejecutar en caso de error
      */
-    fun modificarTransaccion(collection: String, transaccionId: String, transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-        val userId = Firebase.auth.currentUser?.uid
-        if (userId == null) {
-            onFailure(IllegalStateException("Usuario no autenticado"))
-            return
-        }
+    fun actualizarTransaccion(collection: String, transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val userId = Firebase.auth.currentUser?.uid ?: return
 
-        // Construimos la referencia correcta al documento
-        val documentReference = db.collection("users")
+        db.collection("users")
             .document(userId)
             .collection(collection)
-            .document(transaccionId)
-
-        documentReference.set(transaccion)
-            .addOnSuccessListener {
-                Log.d("FireStoreUtil", "Transacción modificada con éxito")
-                onSuccess()
-            }
-            .addOnFailureListener { e ->
-                Log.e("FireStoreUtil", "Error al modificar transacción en Firestore", e)
-                onFailure(e)
-            }
+            .document(transaccion.id)
+            .set(transaccion)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
     }
+
+    fun getUserId(): String {
+        return Firebase.auth.currentUser?.uid ?: throw IllegalStateException("No user logged in")
+    }
+
+
 }
 
 

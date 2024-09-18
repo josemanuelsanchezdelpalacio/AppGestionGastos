@@ -72,16 +72,16 @@ fun LoginScreen(navController: NavController, mvvm: LoginViewModel){
     }
 
     Scaffold(
-       topBar = {
-           CenterAlignedTopAppBar(title = { Text(text = "GESTION GASTOS", color = Blanco)},
-               colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                   containerColor = NaranjaOscuro,
-                   titleContentColor = NaranjaClaro
-               )
-           )
-       }
+        topBar = {
+            CenterAlignedTopAppBar(title = { Text(text = "GESTION GASTOS", color = Blanco)},
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = NaranjaOscuro,
+                    titleContentColor = NaranjaClaro
+                )
+            )
+        }
     ) {
-        paddingValues ->
+            paddingValues ->
 
         //llamo al componente para el diseño del fondo
         fondoPantalla {
@@ -205,4 +205,6 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
         )
     }
 }
+
+
 

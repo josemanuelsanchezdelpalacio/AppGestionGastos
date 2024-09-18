@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -177,13 +180,12 @@ fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionVie
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactionViewModel, uiState: UiState){
-
+fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactionViewModel, uiState: UiState) {
     val context = LocalContext.current
     var categorias by remember { mutableStateOf<List<Categoria>>(emptyList()) }
 
     LaunchedEffect(uiState.tipo) {
-        if(uiState.tipo.isNotEmpty()){
+        if (uiState.tipo.isNotEmpty()) {
             categorias = obtenerCategorias(uiState.tipo)
         }
     }
@@ -193,31 +195,35 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
             .fillMaxSize()
             .padding(paddingValues)
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
-            value = uiState.cantidad,
-            onValueChange = { nuevaCantidad -> mvvm.actualizarDatosTransaccion(cantidad = nuevaCantidad)},
-            label = { Text(text = "Cantidad")},
+            value = uiState.cantidad.toString(),
+            onValueChange = { nuevaCantidad ->
+                val cantidad = nuevaCantidad.toDoubleOrNull() ?: 0.0
+                mvvm.actualizarCampo("cantidad", cantidad)
+            },
+            label = { Text(text = "Cantidad") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = "icono cantidad")}
+            leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = "icono cantidad") }
         )
 
         OutlinedTextField(
             value = uiState.categoria,
-            onValueChange = { mvvm.actualizarDatosTransaccion(uiState.cantidad, it, uiState.tipo)},
-            label = { Text(text = "Categoria")},
+            onValueChange = { nuevaCategoria ->
+                mvvm.actualizarCampo("categoria", nuevaCategoria)
+            },
+            label = { Text(text = "Categoría") },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            leadingIcon = { Icon(Icons.Default.Category, contentDescription = "icono categoria")}
+            leadingIcon = { Icon(Icons.Default.Category, contentDescription = "icono categoria") },
+            readOnly = true
         )
 
         OutlinedTextField(
             value = uiState.fecha,
-            onValueChange = {},
-            label = { Text(text = "Fecha")},
+            onValueChange = { /* No se actualiza manualmente desde el TextField */ },
+            label = { Text(text = "Fecha") },
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
@@ -227,48 +233,49 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
                         } catch (e: DateTimeParseException) {
                             LocalDate.now()
                         }
-                    }else {
+                    } else {
                         LocalDate.now()
                     }
                     showDatePicker(context, fechaInicial) { nuevaFecha ->
-                        mvvm.actualizarDatosTransaccion(
-                            fecha = nuevaFecha.format(
-                                DateTimeFormatter.ISO_DATE
-                            )
+                        mvvm.actualizarCampo(
+                            "fecha", nuevaFecha.format(DateTimeFormatter.ISO_DATE)
                         )
                     }
                 },
-            enabled = false,
-            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "icono calendario")}
+            readOnly = true,
+            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "icono calendario") }
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row (
+        Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
-        ){
+        ) {
             RadioButtonWithLabel(
-                label = "ingreso",
+                label = "Ingreso",
                 selected = uiState.tipo == "ingreso",
-                onClick = { mvvm.actualizarDatosTransaccion(tipo = "ingreso")}
+                onClick = { mvvm.actualizarCampo("tipo", "ingreso") }
             )
             RadioButtonWithLabel(
-                label = "gasto",
+                label = "Gasto",
                 selected = uiState.tipo == "gasto",
-                onClick = { mvvm.actualizarDatosTransaccion(tipo = "gasto")}
+                onClick = { mvvm.actualizarCampo("tipo", "gasto") }
             )
         }
 
-        if(uiState.tipo.isNotEmpty()){
+        if (uiState.tipo.isNotEmpty()) {
             LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(categorias){ categoria ->
-                    categoriaItem(categoria = categoria){
-                        mvvm.actualizarDatosTransaccion(uiState.cantidad, categoria.nombre, uiState.tipo)
-                    }
+                items(categorias) { categoria ->
+                    categoriaItem(
+                        categoria = categoria,
+                        onClick = {
+                            mvvm.actualizarCampo("categoria", categoria.nombre)
+                        }
+                    )
                 }
             }
         }
@@ -276,18 +283,13 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
 }
 
 @Composable
-fun RadioButtonWithLabel(label: String, selected: Boolean, onClick: () -> Unit){
-
-    Row(verticalAlignment = Alignment.CenterVertically){
-
+fun RadioButtonWithLabel(label: String, selected: Boolean, onClick: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         RadioButton(
             selected = selected,
             onClick = onClick,
             colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
         )
         Text(text = label)
-
     }
 }
-
-
