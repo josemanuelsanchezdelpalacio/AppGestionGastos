@@ -7,7 +7,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import java.time.LocalDate
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 object DatePickerComponents {
 

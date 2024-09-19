@@ -217,4 +217,18 @@ object ItemComponents {
         }
     }
 
+    @Composable
+    fun RadioButtonLabel(value: String, label: String, selectedValue: String, onValueSelected: (String) -> Unit){
+
+        Row(verticalAlignment = Alignment.CenterVertically){
+
+            RadioButton(
+                selected = selectedValue == value,
+                onClick = { onValueSelected(value) },
+                colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
+            )
+            Text(label)
+        }
+    }
+
 }

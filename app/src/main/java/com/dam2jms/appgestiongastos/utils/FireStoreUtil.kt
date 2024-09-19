@@ -111,9 +111,6 @@ object FireStoreUtil {
             .addOnFailureListener { onFailure(it) }
     }
 
-    fun getUserId(): String {
-        return Firebase.auth.currentUser?.uid ?: throw IllegalStateException("No user logged in")
-    }
 
 
 }

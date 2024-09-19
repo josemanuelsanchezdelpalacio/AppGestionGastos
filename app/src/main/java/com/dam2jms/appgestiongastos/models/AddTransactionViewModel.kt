@@ -49,7 +49,6 @@ import com.dam2jms.appgestiongastos.data.Categoria
 import com.dam2jms.appgestiongastos.states.Transaccion
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
-import com.dam2jms.appgestiongastos.ui.theme.Gris
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaClaro
 import com.dam2jms.appgestiongastos.utils.FireStoreUtil
 import com.google.firebase.auth.ktx.auth

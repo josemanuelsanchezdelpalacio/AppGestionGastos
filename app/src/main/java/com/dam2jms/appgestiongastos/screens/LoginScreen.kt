@@ -1,9 +1,11 @@
 package com.dam2jms.appgestiongastos.screens
 
 import android.os.Build
+import android.widget.Button
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -33,6 +36,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,8 +44,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -62,7 +69,9 @@ import com.dam2jms.appgestiongastos.utils.Validaciones.validarCorreo
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, mvvm: LoginViewModel){
+
     val uiState by mvvm.uiState.collectAsState()
+    val context = LocalContext.current
 
     //para navegar a HomeScreen si la sesion
     LaunchedEffect(uiState.sesionIniciada) {
@@ -91,7 +100,6 @@ fun LoginScreen(navController: NavController, mvvm: LoginViewModel){
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, mvvm: LoginViewModel, uiState: UiState) {
     val context = LocalContext.current
@@ -107,7 +115,10 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
         Image(
             painter = painterResource(id = R.drawable.imagen_logo),
             contentDescription = "icono app",
-            modifier = Modifier.size(200.dp)
+            modifier = Modifier
+                .size(180.dp)
+                .clip(CircleShape)
+                .background(Blanco)
         )
 
         Text(
@@ -117,15 +128,15 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
+        Spacer(modifier = Modifier.height(24.dp))
+
         OutlinedTextField(
             value = uiState.email,
             onValueChange = { mvvm.onChange(it, uiState.password) },
             label = { Text("Correo electronico") },
             singleLine = true,
             leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = "Correo electronico") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
@@ -137,21 +148,14 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
             visualTransformation = if(uiState.visibilidadPassword) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val icono = if(uiState.visibilidadPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                IconButton(
-                    onClick = {
-                        uiState.visibilidadPassword != uiState.visibilidadPassword
-                        mvvm.visibilidadContraseña()
-                    }
-                ) {
+                IconButton(onClick = { mvvm.visibilidadContraseña() }) {
                     Icon(imageVector = icono, contentDescription = if(uiState.visibilidadPassword) "Ocultar contraseña" else "Mostrar contraseña")
                 }
             },
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Password
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -205,6 +209,7 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
         )
     }
 }
+
 
 
 

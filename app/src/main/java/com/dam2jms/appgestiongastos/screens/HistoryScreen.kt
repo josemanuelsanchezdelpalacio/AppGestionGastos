@@ -20,9 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.components.DatePickerComponents.showDatePicker
+import com.dam2jms.appgestiongastos.components.ItemComponents.RadioButtonLabel
 import com.dam2jms.appgestiongastos.components.ItemComponents.TransactionItem
+import com.dam2jms.appgestiongastos.components.ItemComponents.categoriaItem
 import com.dam2jms.appgestiongastos.components.ScreenComponents
 import com.dam2jms.appgestiongastos.components.ScreenComponents.menu
+import com.dam2jms.appgestiongastos.data.Categoria
+import com.dam2jms.appgestiongastos.data.CategoriaAPI.obtenerCategorias
 import com.dam2jms.appgestiongastos.models.HistoryViewModel
 import com.dam2jms.appgestiongastos.models.TransactionViewModel
 import com.dam2jms.appgestiongastos.navigation.AppScreen
@@ -95,7 +99,14 @@ fun HistoryScreenBody(paddingValues: PaddingValues, uiState: UiState, navControl
     var tipo by remember { mutableStateOf("todos")}
     var buscarFecha by remember { mutableStateOf(LocalDate.now()) }
     var buscarCategoria by remember { mutableStateOf("") }
+    var categorias by remember { mutableStateOf<List<Categoria>>(emptyList()) }
     val context = LocalContext.current
+
+    LaunchedEffect(buscarTipo, tipo){
+        if(buscarTipo == "categoria"){
+            categorias = obtenerCategorias(tipo)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -108,7 +119,7 @@ fun HistoryScreenBody(paddingValues: PaddingValues, uiState: UiState, navControl
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             RadioButtonLabel(value = "fecha", label = "Fecha", selectedValue = buscarTipo) { buscarTipo = it }
-            RadioButtonLabel(value = "categoria", label = "Categoria", selectedValue = buscarTipo) { buscarCategoria = it }
+            RadioButtonLabel(value = "categoria", label = "Categoria", selectedValue = buscarTipo) { buscarTipo = it }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -133,12 +144,19 @@ fun HistoryScreenBody(paddingValues: PaddingValues, uiState: UiState, navControl
                 Text("Seleccionar fecha: ${buscarFecha.format(DateTimeFormatter.ISO_DATE)}")
             }
         }else{
-            OutlinedTextField(
-                value = buscarCategoria,
-                onValueChange = { buscarCategoria = it},
-                label = { Text(text = "Buscar por categoria")},
-                modifier = Modifier.fillMaxWidth()
-            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight(0.4f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(categorias){ categoria ->
+                    categoriaItem(
+                        categoria = categoria,
+                        onClick = { buscarCategoria = categoria.nombre }
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -187,20 +205,4 @@ fun HistoryScreenBody(paddingValues: PaddingValues, uiState: UiState, navControl
         }
     }
 }
-
-@Composable
-fun RadioButtonLabel(value: String, label: String, selectedValue: String, onValueSelected: (String) -> Unit){
-
-    Row(verticalAlignment = Alignment.CenterVertically){
-
-        RadioButton(
-            selected = selectedValue == value,
-            onClick = { onValueSelected(value) },
-            colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
-        )
-        Text(label)
-    }
-}
-
-
 

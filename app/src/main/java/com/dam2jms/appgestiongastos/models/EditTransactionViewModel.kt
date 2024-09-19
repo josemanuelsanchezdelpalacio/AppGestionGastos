@@ -24,6 +24,7 @@ class EditTransactionViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
+    // Cargar los datos de la transacción que se quiere modificar
     fun cargarTransaccion(transaccion: Transaccion) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -36,6 +37,7 @@ class EditTransactionViewModel : ViewModel() {
         }
     }
 
+    // Actualizar los campos de la transacción a medida que se editan
     fun actualizarCampo(campo: String, valor: Any) {
         _uiState.update { currentState ->
             when (campo) {
@@ -52,6 +54,7 @@ class EditTransactionViewModel : ViewModel() {
     fun modificarTransaccion(collection: String, context: Context, navController: NavController) {
         viewModelScope.launch {
             try {
+                // Crear objeto Transaccion actualizado
                 val transaccionActualizada = Transaccion(
                     id = _uiState.value.id,
                     fecha = _uiState.value.fecha,
@@ -60,12 +63,13 @@ class EditTransactionViewModel : ViewModel() {
                     tipo = _uiState.value.tipo
                 )
 
+                // Llamar a FireStoreUtil para actualizar la transacción
                 FireStoreUtil.actualizarTransaccion(
                     collection = collection,
                     transaccion = transaccionActualizada,
                     onSuccess = {
                         Toast.makeText(context, "Transacción actualizada correctamente", Toast.LENGTH_SHORT).show()
-                        navController.popBackStack()
+                        navController.popBackStack() // Volver a la pantalla anterior
                     },
                     onFailure = { e ->
                         Toast.makeText(context, "Error al actualizar la transacción: ${e.message}", Toast.LENGTH_LONG).show()

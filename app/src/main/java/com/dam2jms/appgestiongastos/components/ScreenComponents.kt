@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +51,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -84,35 +86,39 @@ object ScreenComponents {
     @Composable
     fun menu(navController: NavController) {
         ModalDrawerSheet {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(NaranjaClaro)
-                    .padding(16.dp)
-            ) {
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .background(NaranjaOscuro)
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ){
-                    Image(
-                        painter = painterResource(id = R.drawable.imagen_logo),
-                        contentDescription = "icono app",
+                    Box(
                         modifier = Modifier
-                            .size(120.dp)
+                            .size(140.dp)
                             .clip(CircleShape)
-                    )
+                            .background(Blanco),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.imagen_logo),
+                            contentDescription = "icono app",
+                            modifier = Modifier.size(120.dp)
+                        )
+                    }
                 }
 
                 Text(
                     text = "Menú",
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Blanco,
-                    modifier = Modifier.padding(vertical = 16.dp)
+                    color = NaranjaOscuro,
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .align(Alignment.CenterHorizontally)
                 )
 
-                Divider(color = Blanco)
+                Divider(color = NaranjaOscuro)
                 Spacer(modifier = Modifier.height(24.dp))
 
                 NavigationDrawerItem(
@@ -120,11 +126,13 @@ object ScreenComponents {
                     icon = { Icon(imageVector = Icons.Default.Home, contentDescription = "Inicio", tint = Negro)},
                     selected = false,
                     onClick = { navController.navigate(AppScreen.HomeScreen.route) },
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .background(NaranjaClaro)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Blanco)
+                Divider(color = NaranjaOscuro)
                 Spacer(modifier = Modifier.height(16.dp))
 
 
@@ -136,24 +144,27 @@ object ScreenComponents {
                         val currentDate = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
                         navController.navigate(AppScreen.TransactionScreen.createRoute(currentDate))
                     },
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .background(NaranjaClaro)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Blanco)
+                Divider(color = NaranjaOscuro)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 NavigationDrawerItem(
-                    label = { Text(text = "Historial de transacciones", color = Color.Black) },
+                    label = { Text(text = "Historial de transacciones", color = Negro) },
                     icon = { Icon(imageVector = Icons.Default.History, contentDescription = "Gastos", tint = Negro)},
                     selected = false,
                     onClick = { navController.navigate(AppScreen.HistoryScreen.route) },
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .background(NaranjaClaro)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Blanco)
+                Divider(color = NaranjaOscuro)
             }
         }
     }
-}

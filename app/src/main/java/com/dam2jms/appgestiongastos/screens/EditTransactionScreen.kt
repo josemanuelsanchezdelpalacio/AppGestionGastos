@@ -72,6 +72,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dam2jms.appgestiongastos.components.DatePickerComponents
 import com.dam2jms.appgestiongastos.components.DatePickerComponents.showDatePicker
+import com.dam2jms.appgestiongastos.components.ItemComponents
+import com.dam2jms.appgestiongastos.components.ItemComponents.RadioButtonLabel
 import com.dam2jms.appgestiongastos.components.ItemComponents.categoriaItem
 import com.dam2jms.appgestiongastos.components.ScreenComponents
 import com.dam2jms.appgestiongastos.data.Categoria
@@ -171,7 +173,7 @@ fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionVie
                 )
             }
         ) { paddingValues ->
-            EditTransactionScreenBody(paddingValues = paddingValues, mvvm = mvvm, uiState = uiState)
+            EditTransactionScreenBody(paddingValues = paddingValues, mvvm = mvvm, uiState = uiState, navController = navController, context = context)
         }
     }
 
@@ -179,14 +181,13 @@ fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionVie
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactionViewModel, uiState: UiState) {
-    val context = LocalContext.current
-
+fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactionViewModel, uiState: UiState, navController: NavController, context: Context) {
     var categorias by remember { mutableStateOf<List<Categoria>>(emptyList()) }
+    var tipo by remember { mutableStateOf(uiState.tipo) }
 
-    LaunchedEffect(uiState.tipo) {
-        if (uiState.tipo.isNotEmpty()) {
-            categorias = obtenerCategorias(uiState.tipo)
+    LaunchedEffect(tipo) {
+        if (tipo.isNotEmpty()) {
+            categorias = obtenerCategorias(tipo)
         }
     }
 
@@ -211,9 +212,7 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
 
         OutlinedTextField(
             value = uiState.categoria,
-            onValueChange = { nuevaCategoria ->
-                mvvm.actualizarCampo("categoria", nuevaCategoria)
-            },
+            onValueChange = { },
             label = { Text(text = "Categoría") },
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = { Icon(Icons.Default.Category, contentDescription = "icono categoria") },
@@ -247,7 +246,6 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
                     Icons.Default.CalendarToday,
                     contentDescription = "icono calendario",
                     modifier = Modifier.clickable {
-                        // También mostrar el DatePickerDialog si se hace clic en el icono
                         val fechaInicial = if (uiState.fecha.isNotBlank()) {
                             try {
                                 LocalDate.parse(uiState.fecha)
@@ -257,7 +255,7 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
                         } else {
                             LocalDate.now()
                         }
-                        DatePickerComponents.showDatePicker(context, fechaInicial) { nuevaFecha ->
+                        showDatePicker(context, fechaInicial) { nuevaFecha ->
                             mvvm.actualizarCampo("fecha", nuevaFecha.format(DateTimeFormatter.ISO_DATE))
                         }
                     }
@@ -269,19 +267,17 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            RadioButtonWithLabel(
-                label = "Ingreso",
-                selected = uiState.tipo == "ingreso",
-                onClick = { mvvm.actualizarCampo("tipo", "ingreso") }
-            )
-            RadioButtonWithLabel(
-                label = "Gasto",
-                selected = uiState.tipo == "gasto",
-                onClick = { mvvm.actualizarCampo("tipo", "gasto") }
-            )
+            RadioButtonLabel(value = "ingreso", label = "Ingresos", selectedValue = tipo) {
+                tipo = it
+                mvvm.actualizarCampo("tipo", it)
+            }
+            RadioButtonLabel(value = "gasto", label = "Gastos", selectedValue = tipo) {
+                tipo = it
+                mvvm.actualizarCampo("tipo", it)
+            }
         }
 
-        if (uiState.tipo.isNotEmpty()) {
+        if (tipo.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -298,18 +294,19 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
                 }
             }
         }
-    }
-}
 
-
-@Composable
-fun RadioButtonWithLabel(label: String, selected: Boolean, onClick: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        RadioButton(
-            selected = selected,
-            onClick = onClick,
-            colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
-        )
-        Text(text = label)
+        Button(
+            onClick = {
+                mvvm.modificarTransaccion(
+                    collection = tipo,
+                    context = context,
+                    navController = navController
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = NaranjaClaro)
+        ) {
+            Text(text = "Guardar cambios")
+        }
     }
 }
