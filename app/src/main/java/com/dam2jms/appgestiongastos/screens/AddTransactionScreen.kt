@@ -137,7 +137,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
-            value = uiState.cantidad,
+            value = uiState.cantidad.toString(),
             onValueChange = { nuevaCantidad -> mvvm.actualizarDatosTransaccion(nuevaCantidad, uiState.categoria, uiState.tipo) },
             label = { Text("Cantidad") },
             singleLine = true,
@@ -150,7 +150,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
 
         OutlinedTextField(
             value = uiState.categoria,
-            onValueChange = { nuevaCategoria -> mvvm.actualizarDatosTransaccion(uiState.cantidad, nuevaCategoria, uiState.tipo) },
+            onValueChange = { nuevaCategoria -> mvvm.actualizarDatosTransaccion(uiState.cantidad.toString(), nuevaCategoria, uiState.tipo) },
             label = { Text("Categoria") },
             singleLine = true,
             leadingIcon = { Icon(imageVector = Icons.Filled.Category, contentDescription = "Descripcion") },
@@ -166,7 +166,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
                     selected = uiState.tipo == "ingreso",
-                    onClick = { mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.categoria, tipo = "ingreso") }
+                    onClick = { mvvm.actualizarDatosTransaccion(uiState.cantidad.toString(), uiState.categoria, tipo = "ingreso") }
                 )
                 Text(
                     text = "Ingreso",
@@ -177,7 +177,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
                     selected = uiState.tipo == "gasto",
-                    onClick = { mvvm.actualizarDatosTransaccion(uiState.cantidad, uiState.categoria, tipo = "gasto") }
+                    onClick = { mvvm.actualizarDatosTransaccion(uiState.cantidad.toString(), uiState.categoria, tipo = "gasto") }
                 )
                 Text(
                     text = "Gasto",
@@ -198,7 +198,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
                     categoriaItem(
                         categoria = categoria,
                         onClick = {
-                            mvvm.actualizarDatosTransaccion(uiState.cantidad, categoria.nombre, uiState.tipo)
+                            mvvm.actualizarDatosTransaccion(uiState.cantidad.toString(), categoria.nombre, uiState.tipo)
                         }
                     )
                 }
@@ -207,7 +207,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
 
         Button(
             onClick = {
-                val cantidadValida = validarCantidad(context, uiState.cantidad)
+                val cantidadValida = validarCantidad(context, uiState.cantidad.toString())
                 val categoriaValida = validarDescripcion(context, uiState.categoria)
                 val tipoSeleccionado = uiState.tipo.isNotEmpty()
 
@@ -218,7 +218,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
                 if (cantidadValida && categoriaValida) {
                     val transaction = Transaccion(
                         id = "",
-                        cantidad = uiState.cantidad.toDoubleOrNull() ?: 0.0,
+                        cantidad = uiState.cantidad,
                         categoria = uiState.categoria,
                         fecha = LocalDate.now().format(DateTimeFormatter.ISO_DATE),
                         tipo = uiState.tipo

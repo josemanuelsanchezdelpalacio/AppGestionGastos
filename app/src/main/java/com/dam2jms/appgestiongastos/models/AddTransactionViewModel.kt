@@ -78,7 +78,7 @@ class AddTransactionViewModel : ViewModel() {
      */
     fun actualizarDatosTransaccion(cantidad: String?, categoria: String?, tipo: String) {
         _uiState.update { it.copy(
-                cantidad = cantidad ?: uiState.value.cantidad,
+                cantidad = cantidad?.toDoubleOrNull() ?: uiState.value.cantidad,
                 categoria = categoria ?: uiState.value.categoria,
                 tipo = tipo
             )

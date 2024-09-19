@@ -151,7 +151,6 @@ fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionVie
                         FloatingActionButton(
                             onClick = {
                                 mvvm.modificarTransaccion(
-                                    transaccionId = uiState.id,
                                     collection = if(uiState.tipo == "ingreso") "ingresos" else "gastos",
                                     context = context,
                                     navController = navController
@@ -182,6 +181,7 @@ fun EditTransactionScreen(navController: NavController, mvvm: EditTransactionVie
 @Composable
 fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactionViewModel, uiState: UiState) {
     val context = LocalContext.current
+
     var categorias by remember { mutableStateOf<List<Categoria>>(emptyList()) }
 
     LaunchedEffect(uiState.tipo) {
@@ -222,11 +222,12 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
 
         OutlinedTextField(
             value = uiState.fecha,
-            onValueChange = { /* No se actualiza manualmente desde el TextField */ },
+            onValueChange = { },
             label = { Text(text = "Fecha") },
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
+                    // Muestra el DatePickerDialog cuando se hace clic en el campo
                     val fechaInicial = if (uiState.fecha.isNotBlank()) {
                         try {
                             LocalDate.parse(uiState.fecha)
@@ -236,14 +237,32 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
                     } else {
                         LocalDate.now()
                     }
-                    showDatePicker(context, fechaInicial) { nuevaFecha ->
-                        mvvm.actualizarCampo(
-                            "fecha", nuevaFecha.format(DateTimeFormatter.ISO_DATE)
-                        )
+                    DatePickerComponents.showDatePicker(context, fechaInicial) { nuevaFecha ->
+                        mvvm.actualizarCampo("fecha", nuevaFecha.format(DateTimeFormatter.ISO_DATE))
                     }
                 },
             readOnly = true,
-            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "icono calendario") }
+            leadingIcon = {
+                Icon(
+                    Icons.Default.CalendarToday,
+                    contentDescription = "icono calendario",
+                    modifier = Modifier.clickable {
+                        // También mostrar el DatePickerDialog si se hace clic en el icono
+                        val fechaInicial = if (uiState.fecha.isNotBlank()) {
+                            try {
+                                LocalDate.parse(uiState.fecha)
+                            } catch (e: DateTimeParseException) {
+                                LocalDate.now()
+                            }
+                        } else {
+                            LocalDate.now()
+                        }
+                        DatePickerComponents.showDatePicker(context, fechaInicial) { nuevaFecha ->
+                            mvvm.actualizarCampo("fecha", nuevaFecha.format(DateTimeFormatter.ISO_DATE))
+                        }
+                    }
+                )
+            }
         )
 
         Row(
@@ -281,6 +300,7 @@ fun EditTransactionScreenBody(paddingValues: PaddingValues, mvvm: EditTransactio
         }
     }
 }
+
 
 @Composable
 fun RadioButtonWithLabel(label: String, selected: Boolean, onClick: () -> Unit) {

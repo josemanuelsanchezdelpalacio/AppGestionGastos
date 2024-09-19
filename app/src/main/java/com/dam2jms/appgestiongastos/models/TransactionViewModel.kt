@@ -120,20 +120,6 @@ class TransactionViewModel : ViewModel() {
         )
     }
 
-
-    /** Método para actualizar una transacción existente */
-    fun actualizarTransaccionExistente(collection: String, transaccionId: String, transaccion: Transaccion, context: Context) {
-
-        FireStoreUtil.modificarTransaccion(collection, transaccionId, transaccion,
-            onSuccess = {
-                Toast.makeText(context, "Transacción actualizada correctamente", Toast.LENGTH_SHORT).show()
-            },
-            onFailure = {
-                Toast.makeText(context, "Error al actualizar la transaccion", Toast.LENGTH_SHORT).show()
-            }
-        )
-    }
-
     /** Método para mostrar un calendario horizontal */
     @Composable
     fun horizontalCalendar(fechaSeleccionada: LocalDate, onDateSelected: (LocalDate) -> Unit) {

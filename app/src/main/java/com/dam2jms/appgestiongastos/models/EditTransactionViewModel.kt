@@ -40,7 +40,7 @@ class EditTransactionViewModel : ViewModel() {
         _uiState.update { currentState ->
             when (campo) {
                 "fecha" -> currentState.copy(fecha = valor as String)
-                "cantidad" -> currentState.copy(cantidad = (valor as String).toDoubleOrNull() ?: 0.0)
+                "cantidad" -> currentState.copy(cantidad = valor as Double)
                 "categoria" -> currentState.copy(categoria = valor as String)
                 "tipo" -> currentState.copy(tipo = valor as String)
                 else -> currentState
@@ -78,5 +78,3 @@ class EditTransactionViewModel : ViewModel() {
         }
     }
 }
-
-
