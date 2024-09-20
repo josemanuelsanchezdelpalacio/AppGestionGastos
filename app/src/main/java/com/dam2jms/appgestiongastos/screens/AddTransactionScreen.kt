@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -59,6 +61,7 @@ import com.dam2jms.appgestiongastos.models.AddTransactionViewModel
 import com.dam2jms.appgestiongastos.states.Transaccion
 import com.dam2jms.appgestiongastos.states.UiState
 import com.dam2jms.appgestiongastos.ui.theme.Blanco
+import com.dam2jms.appgestiongastos.ui.theme.Gris
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaClaro
 import com.dam2jms.appgestiongastos.ui.theme.NaranjaOscuro
 import com.dam2jms.appgestiongastos.utils.Validaciones.validarCantidad
@@ -73,7 +76,6 @@ import java.time.format.DateTimeFormatter
 fun AddTransactionScreen(navController: NavController, mvvm: AddTransactionViewModel) {
 
     val uiState by mvvm.uiState.collectAsState()
-
     val context = LocalContext.current
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -89,7 +91,7 @@ fun AddTransactionScreen(navController: NavController, mvvm: AddTransactionViewM
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text(text = "Añadir Transacción", color = Color.White) },
+                    title = { Text(text = "Añadir Transacción", color = Blanco) },
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch {
@@ -117,46 +119,47 @@ fun AddTransactionScreen(navController: NavController, mvvm: AddTransactionViewM
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, navController: NavController, mvvm: AddTransactionViewModel, context: Context) {
-
-    var categorias by remember { mutableStateOf<List<Categoria>>(emptyList()) }
-
-    LaunchedEffect(uiState.tipo) {
-        if(uiState.tipo.isNotEmpty()){
-            categorias = obtenerCategorias(uiState.tipo)
-        }
-    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
-            value = uiState.cantidad.toString(),
-            onValueChange = { nuevaCantidad -> mvvm.actualizarDatosTransaccion(nuevaCantidad, uiState.categoria, uiState.tipo) },
+            value = if(uiState.cantidad == 0.0) "" else uiState.cantidad.toString(),
+            onValueChange = { mvvm.actualizarDatosTransaccion(it, uiState.categoria, uiState.tipo) },
             label = { Text("Cantidad") },
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             leadingIcon = { Icon(imageVector = Icons.Filled.AttachMoney, contentDescription = "Cantidad") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
+                .padding(bottom = 8.dp),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = NaranjaOscuro,
+                unfocusedBorderColor = Gris
+            )
         )
 
         OutlinedTextField(
             value = uiState.categoria,
-            onValueChange = { nuevaCategoria -> mvvm.actualizarDatosTransaccion(uiState.cantidad.toString(), nuevaCategoria, uiState.tipo) },
+            onValueChange = { mvvm.actualizarDatosTransaccion(uiState.cantidad.toString(), it, uiState.tipo) },
             label = { Text("Categoria") },
             singleLine = true,
             leadingIcon = { Icon(imageVector = Icons.Filled.Category, contentDescription = "Descripcion") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
+                .padding(bottom = 8.dp),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = NaranjaOscuro,
+                unfocusedBorderColor = Gris
+            )
         )
 
         Row(
@@ -186,6 +189,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
             }
         }
 
+        Divider(color = Color.LightGray, thickness = 1.dp)
 
         if(uiState.tipo.isNotEmpty()){
             LazyColumn(
@@ -194,7 +198,7 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(categorias) { categoria ->
+                items(uiState.categorias) { categoria ->
                     categoriaItem(
                         categoria = categoria,
                         onClick = {
@@ -209,9 +213,8 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
             onClick = {
                 val cantidadValida = validarCantidad(context, uiState.cantidad.toString())
                 val categoriaValida = validarDescripcion(context, uiState.categoria)
-                val tipoSeleccionado = uiState.tipo.isNotEmpty()
 
-                if (!tipoSeleccionado) {
+                if (!uiState.tipo.isNotEmpty()) {
                     Toast.makeText(context, "Debe seleccionar Ingresos o Gastos", Toast.LENGTH_SHORT).show()
                 }
 
@@ -244,3 +247,4 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
         }
     }
 }
+

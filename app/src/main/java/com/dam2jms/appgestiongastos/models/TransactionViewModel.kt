@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dam2jms.appgestiongastos.auxiliar.BaseTransactionViewModel
 import com.dam2jms.appgestiongastos.data.Categoria
 import com.dam2jms.appgestiongastos.states.Transaccion
 import com.dam2jms.appgestiongastos.states.UiState
@@ -65,62 +66,33 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
-class TransactionViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(UiState())
-    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+class TransactionViewModel : BaseTransactionViewModel() {
 
     //inicializo el ViewModel y leo las transacciones al crear el ViewModel
     init {
         leerTransacciones()
     }
 
-    /**
-     * Actualiza el estado del UI con las listas de ingresos y gastos proporcionadas.
-     *
-     * @param ingresos La lista de transacciones de tipo "ingreso" a actualizar.
-     * @param gastos La lista de transacciones de tipo "gasto" a actualizar.
-     */
-    fun actualizarTransaccion(ingresos: List<Transaccion>, gastos: List<Transaccion>) {
-        _uiState.update { it.copy(ingresos = ingresos, gastos = gastos) }
-    }
-
-    /**
-     * Lee las transacciones desde Firestore, filtra por tipo y actualiza los ingresos y gastos en el estado del UI.
-     *
-     * Se espera que FireStoreUtil obtenga todas las transacciones y que estas sean filtradas
-     * en función del tipo para actualizar el estado del UI.
-     *
-     * filtro las transacciones por tipo y actualiza el estado del UI
-     * @param ingresos
-     * @param gastos
-     */
-    fun leerTransacciones() {
-        FireStoreUtil.obtenerTransacciones(
-            onSuccess = { transacciones ->
-                val ingresos = transacciones.filter { it.tipo == "ingreso" }
-                val gastos = transacciones.filter { it.tipo == "gasto" }
-                actualizarTransaccion(ingresos, gastos)
-            },
-            onFailure = {}
-        )
-    }
-
-    /** Método para eliminar una transacción */
-    fun eliminarTransaccionExistente(collection: String, transaccionId: String, context: Context) {
+    /**metodo para eliminar una transacción
+     * @param coleccion Nombre de la coleccion en Firestore de donde se eliminara la transaccion
+     * @param transaccionId ID de la transaccion que se desea eliminar
+     * @param context contexto necesario para los avisos dentro del Toast*/
+    fun eliminarTransaccionExistente(coleccion: String, transaccionId: String, context: Context) {
         FireStoreUtil.eliminarTransaccion(
-            collection, transaccionId,
+            coleccion, transaccionId,
             onSuccess = {
                 Toast.makeText(context, "Transaccion eliminada correctamente", Toast.LENGTH_SHORT).show()
                 leerTransacciones()
             },
-            onFailure = { exception ->
-                val errorMsg = exception.localizedMessage ?: "Error desconocido"
-                Toast.makeText(context, "Error al eliminar la transaccion: $errorMsg", Toast.LENGTH_SHORT).show()
+            onFailure = {
+                Toast.makeText(context, "Error al eliminar la transaccion", Toast.LENGTH_SHORT).show()
             }
         )
     }
 
-    /** Método para mostrar un calendario horizontal */
+    /**metodo para mostrar un calendario horizontal de los ultimos 30 dias
+     * @param fechaSeleccionada fecha actualmente seleccionada en el calendario
+     * @param onDateSelected funcion lambda que se ejecuta al seleccionar una fecha pasando la fecha selecionada*/
     @Composable
     fun horizontalCalendar(fechaSeleccionada: LocalDate, onDateSelected: (LocalDate) -> Unit) {
         val fechas = remember {

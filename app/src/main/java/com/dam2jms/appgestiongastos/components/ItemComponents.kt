@@ -142,7 +142,7 @@ object ItemComponents {
                     Button(
                         onClick = {
                             mvvm.eliminarTransaccionExistente(
-                                collection = if (transaccion.tipo == "ingreso") "ingresos" else "gastos",
+                                coleccion = if (transaccion.tipo == "ingreso") "ingresos" else "gastos",
                                 transaccionId = transaccion.id,
                                 context = context
                             )
@@ -217,6 +217,8 @@ object ItemComponents {
         }
     }
 
+    /**
+     * componente que representa un radiobutton **/
     @Composable
     fun RadioButtonLabel(value: String, label: String, selectedValue: String, onValueSelected: (String) -> Unit){
 

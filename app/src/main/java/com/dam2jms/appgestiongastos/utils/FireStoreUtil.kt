@@ -9,6 +9,8 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -90,29 +92,6 @@ object FireStoreUtil {
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
-
-    /**
-     * Actualiza una transacción existente en Firestore.
-     *
-     * @param collection Colección de la transacción ("ingresos" o "gastos")
-     * @param transaccion La transacción actualizada
-     * @param onSuccess Función a ejecutar en caso de éxito
-     * @param onFailure Función a ejecutar en caso de error
-     */
-    fun actualizarTransaccion(collection: String, transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-        val userId = Firebase.auth.currentUser?.uid ?: return
-
-        db.collection("users")
-            .document(userId)
-            .collection(collection)
-            .document(transaccion.id)
-            .set(transaccion)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { onFailure(it) }
-    }
-
-
-
 }
 
 

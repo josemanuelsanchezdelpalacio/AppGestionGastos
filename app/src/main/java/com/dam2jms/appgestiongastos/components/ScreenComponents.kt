@@ -65,7 +65,7 @@ object ScreenComponents {
 
     /**metodo con el fondo para las pantallas LoginScreen y HomeScreen**/
     @Composable
-    fun fondoPantalla(contenido: @Composable() (BoxScope.() -> Unit)){
+    fun fondoPantalla(contenido: @Composable() (BoxScope.() -> Unit)) {
 
         Box(
             modifier = Modifier
@@ -87,84 +87,111 @@ object ScreenComponents {
     fun menu(navController: NavController) {
         ModalDrawerSheet {
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(NaranjaOscuro)
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(NaranjaOscuro)
-                        .padding(vertical = 16.dp),
+                        .size(140.dp)
+                        .clip(CircleShape)
+                        .background(Blanco),
                     contentAlignment = Alignment.Center
-                ){
-                    Box(
-                        modifier = Modifier
-                            .size(140.dp)
-                            .clip(CircleShape)
-                            .background(Blanco),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.imagen_logo),
-                            contentDescription = "icono app",
-                            modifier = Modifier.size(120.dp)
-                        )
-                    }
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.imagen_logo),
+                        contentDescription = "icono app",
+                        modifier = Modifier.size(120.dp)
+                    )
                 }
-
-                Text(
-                    text = "Menú",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                    color = NaranjaOscuro,
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
-
-                Divider(color = NaranjaOscuro)
-                Spacer(modifier = Modifier.height(24.dp))
-
-                NavigationDrawerItem(
-                    label = { Text(text = "Volver al inicio", color = Negro) },
-                    icon = { Icon(imageVector = Icons.Default.Home, contentDescription = "Inicio", tint = Negro)},
-                    selected = false,
-                    onClick = { navController.navigate(AppScreen.HomeScreen.route) },
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .background(NaranjaClaro)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = NaranjaOscuro)
-                Spacer(modifier = Modifier.height(16.dp))
-
-
-                NavigationDrawerItem(
-                    label = { Text(text = "Añadir transacciones", color = Negro) },
-                    icon = { Icon(imageVector = Icons.Default.Money, contentDescription = "Gastos", tint = Negro)},
-                    selected = false,
-                    onClick = {
-                        val currentDate = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
-                        navController.navigate(AppScreen.TransactionScreen.createRoute(currentDate))
-                    },
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .background(NaranjaClaro)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = NaranjaOscuro)
-                Spacer(modifier = Modifier.height(16.dp))
-
-                NavigationDrawerItem(
-                    label = { Text(text = "Historial de transacciones", color = Negro) },
-                    icon = { Icon(imageVector = Icons.Default.History, contentDescription = "Gastos", tint = Negro)},
-                    selected = false,
-                    onClick = { navController.navigate(AppScreen.HistoryScreen.route) },
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .background(NaranjaClaro)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = NaranjaOscuro)
             }
+
+            Text(
+                text = "Menú",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                color = NaranjaOscuro,
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Divider(color = NaranjaOscuro)
+            Spacer(modifier = Modifier.height(24.dp))
+
+            NavigationDrawerItem(
+                label = { Text(text = "Volver al inicio", color = Negro) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Home,
+                        contentDescription = "Inicio",
+                        tint = Negro
+                    )
+                },
+                selected = false,
+                onClick = { navController.navigate(AppScreen.HomeScreen.route) },
+                modifier = Modifier.padding(vertical = 8.dp),
+                colors = NavigationDrawerItemDefaults.colors(
+                    selectedContainerColor = NaranjaClaro,
+                    unselectedTextColor = Negro,
+                    unselectedIconColor = Negro
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Divider(color = NaranjaOscuro)
+            Spacer(modifier = Modifier.height(16.dp))
+
+
+            NavigationDrawerItem(
+                label = { Text(text = "Añadir transacciones", color = Negro) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Money,
+                        contentDescription = "Gastos",
+                        tint = Negro
+                    )
+                },
+                selected = false,
+                onClick = {
+                    val currentDate = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+                    navController.navigate(AppScreen.TransactionScreen.createRoute(currentDate))
+                },
+                modifier = Modifier.padding(vertical = 8.dp),
+                colors = NavigationDrawerItemDefaults.colors(
+                    selectedContainerColor = NaranjaClaro,
+                    unselectedTextColor = Negro,
+                    unselectedIconColor = Negro
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Divider(color = NaranjaOscuro)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            NavigationDrawerItem(
+                label = { Text(text = "Historial de transacciones", color = Negro) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = "Gastos",
+                        tint = Negro
+                    )
+                },
+                selected = false,
+                onClick = { navController.navigate(AppScreen.HistoryScreen.route) },
+                modifier = Modifier.padding(vertical = 8.dp),
+                colors = NavigationDrawerItemDefaults.colors(
+                    selectedContainerColor = NaranjaClaro,
+                    unselectedTextColor = Negro,
+                    unselectedIconColor = Negro
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Divider(color = NaranjaOscuro)
         }
     }
+}

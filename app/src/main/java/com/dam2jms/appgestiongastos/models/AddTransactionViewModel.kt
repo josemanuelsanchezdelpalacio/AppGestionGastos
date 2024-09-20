@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dam2jms.appgestiongastos.auxiliar.BaseTransactionViewModel
 import com.dam2jms.appgestiongastos.data.Categoria
 import com.dam2jms.appgestiongastos.states.Transaccion
 import com.dam2jms.appgestiongastos.states.UiState
@@ -63,10 +64,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
-class AddTransactionViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(UiState())
-    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
-
+class AddTransactionViewModel : BaseTransactionViewModel() {
 
     /**
      * Actualiza el estado del UI con la cantidad, descripción y tipo de transacción proporcionados.
@@ -81,6 +79,20 @@ class AddTransactionViewModel : ViewModel() {
                 categoria = categoria ?: uiState.value.categoria,
                 tipo = tipo
             )
+        }
+
+        if(tipo.isNotEmpty()){
+            obtenerCategoriasPorTipo()
+        }
+    }
+
+    /**
+     * metodo que obtiene las categorias segun el tipo y actualiza el estado de la interfaz*
+     * @param tipo el tipo de transaccion (ingreso/gasto)
+     * */
+    private fun obtenerCategoriasPorTipo(){
+        _uiState.update {
+            it.copy(categorias = _uiState.value.categorias)
         }
     }
 
@@ -109,73 +121,4 @@ class AddTransactionViewModel : ViewModel() {
             }
         )
     }
-
-    /**
-     * Lee las transacciones desde Firestore, filtra por tipo y actualiza los ingresos y gastos en el estado del UI.
-     *
-     * Se espera que FireStoreUtil obtenga todas las transacciones y que estas sean filtradas
-     * en función del tipo para actualizar el estado del UI.
-     *
-     * filtro las transacciones por tipo y actualiza el estado del UI
-     * @param ingresos
-     * @param gastos
-     */
-    fun leerTransacciones() {
-        FireStoreUtil.obtenerTransacciones(
-            onSuccess = { transacciones ->
-                val ingresos = transacciones.filter { it.tipo == "ingreso" }
-                val gastos = transacciones.filter { it.tipo == "gasto" }
-                _uiState.update { it.copy(ingresos = ingresos, gastos = gastos) }
-            },
-            onFailure = {}
-        )
-    }
-
-    /***/
-    @Composable
-    fun categoriaItem(categoria: Categoria, onClick: () -> Unit){
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onClick() },
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ){
-                Icon(
-                    imageVector = obtenerIconoCategoria(categoria.nombre),
-                    contentDescription = categoria.nombre,
-                    tint = NaranjaClaro,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(text = categoria.nombre, style = MaterialTheme.typography.bodyLarge)
-            }
-        }
-    }
-
-    /**metodo para establecer un icono a cada categoria*/
-    @Composable
-    fun obtenerIconoCategoria(categoria: String): ImageVector {
-
-        return when (categoria.toLowerCase()){
-            "salario" -> Icons.Default.Money
-            "casa" -> Icons.Default.Home
-            "ropa" -> Icons.Default.ShoppingBag
-            "educacion" -> Icons.Default.School
-            "entretenimiento" -> Icons.Default.Movie
-            "regalo" -> Icons.Default.CardGiftcard
-            "mascota" -> Icons.Default.Pets
-            "viajes" -> Icons.Default.Flight
-            else -> Icons.Default.Category
-        }
-
-    }
-
 }

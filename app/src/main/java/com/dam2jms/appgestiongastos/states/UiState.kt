@@ -1,5 +1,7 @@
 package com.dam2jms.appgestiongastos.states
 
+import com.dam2jms.appgestiongastos.data.Categoria
+
 data class UiState(
 
     //para loginscreen
@@ -26,8 +28,14 @@ data class UiState(
     var fecha: String = "",
     var tipo: String = "",
 
-    val transaccionesFiltradas: List<Transaccion> = emptyList()
+    //para addTransactionScreen
+    val categorias: List<Categoria> = emptyList(),
 
+    //para HistoryScreen
+    val transaccionesFiltradas: List<Transaccion> = emptyList(),
+
+    //para editTransactionScreen
+    val transaccionId: String = ""
 )
 
 

@@ -56,7 +56,6 @@ class HomeViewModel: ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-
     private val db = Firebase.firestore
     private val currencyViewModel = CurrencyViewModel()
 

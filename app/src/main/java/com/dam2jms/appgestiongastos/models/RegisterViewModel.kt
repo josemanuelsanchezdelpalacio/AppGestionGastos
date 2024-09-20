@@ -1,41 +1,36 @@
 package com.dam2jms.appgestiongastos.models
 
 import android.content.Context
-import android.os.PerformanceHintManager
-import android.util.Patterns
 import android.widget.Toast
-import androidx.lifecycle.ViewModel
-import com.dam2jms.appgestiongastos.states.UiState
-import com.dam2jms.appgestiongastos.utils.Validaciones
+import com.dam2jms.appgestiongastos.auxiliar.AuthViewModel
 import com.dam2jms.appgestiongastos.utils.Validaciones.validaContraseña
 import com.dam2jms.appgestiongastos.utils.Validaciones.validarCorreo
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import java.util.Properties
 
-/**Permite crear un nuevo usuario en Firebase */
 class RegisterViewModel : AuthViewModel() {
 
-
-    /** Permite crear un nuevo usuario en Firebase y crear un documento en Firestore */
+    /**
+     * Permite crear un nuevo usuario en Firebase y crear un documento en Firestore
+     * @param email correo electronico del nuevo usuario
+     * @param password contraseña del nuevo usuario
+     * @param context contexto necesario para los avisos dentro del Toast
+     */
     fun registrarUsuario(email: String, password: String, context: Context){
 
+        //valido el formato del correo electronico
         if(!validarCorreo(context, email)){
             Toast.makeText(context, "Correo electronico no valido", Toast.LENGTH_SHORT).show()
             return
         }
 
+        //valido la longitud de la contraseña
         if(!validaContraseña(context, password)){
             Toast.makeText(context, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
             return
         }
 
-        //crear usuario en Firestore
+        //verifico si el correo ya esta registrado en firebase
         auth.fetchSignInMethodsForEmail(email)
             .addOnCompleteListener { task ->
                 if(task.isSuccessful) {
@@ -43,6 +38,7 @@ class RegisterViewModel : AuthViewModel() {
                     if (signInMethods.isNullOrEmpty()) {
                         Toast.makeText(context, "El correo no esta registrado. Utilize un correo existente", Toast.LENGTH_SHORT).show()
                     } else {
+                        //creo el nuevo usuario en Firebase si el correo es valido
                         crearUsuarioFirebase(email, password, context)
                     }
                 }else {
@@ -51,8 +47,14 @@ class RegisterViewModel : AuthViewModel() {
             }
     }
 
+    /**
+     * metodo para crear un nuevo usuario en firebase y guardo sus datos en firestore
+     * @param email correo electronico del nuevo usuario
+     * @param password contraseña del nuevo usuario
+     * @param context contexto necesario para los avisos **/
     private fun crearUsuarioFirebase(email: String, password: String, context: Context){
 
+        //creo el usuario en Firebase Authetication
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if(task.isSuccessful){

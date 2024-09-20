@@ -1,8 +1,5 @@
-package com.dam2jms.appgestiongastos.models
+package com.dam2jms.appgestiongastos.auxiliar
 
-import android.content.Context
-import android.util.Patterns
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.dam2jms.appgestiongastos.states.UiState
 import com.google.firebase.auth.FirebaseAuth
@@ -13,7 +10,7 @@ import kotlinx.coroutines.flow.update
 
 abstract class AuthViewModel: ViewModel(){
 
-    protected val _uiState = MutableStateFlow(UiState())
+    private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     protected val auth: FirebaseAuth = FirebaseAuth.getInstance()

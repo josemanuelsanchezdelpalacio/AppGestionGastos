@@ -1,35 +1,33 @@
 package com.dam2jms.appgestiongastos.models
 
 import android.content.Context
-import android.credentials.CredentialManager
-import android.util.Patterns
 import android.widget.Toast
-import androidx.compose.runtime.Composable
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
-import com.dam2jms.appgestiongastos.navigation.AppScreen
-import com.dam2jms.appgestiongastos.states.UiState
-import com.google.android.gms.common.api.Response
-import com.google.firebase.auth.AuthCredential
-import com.google.firebase.auth.AuthResult
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import com.dam2jms.appgestiongastos.auxiliar.AuthViewModel
+import com.dam2jms.appgestiongastos.utils.Validaciones.validaContraseña
+import com.dam2jms.appgestiongastos.utils.Validaciones.validarCorreo
 
 class LoginViewModel : AuthViewModel() {
 
-    /**Permite iniciar sesion con un usuario que ya exista en firebase*/
+    /**
+     * Permite iniciar sesion con un usuario que ya exista en firebase
+     * @param email correo electronico del usuario
+     * @param password contraseña del usuario
+     * @param context contexto necesario para los avisos dentro del Toast
+     * */
     fun iniciarSesion(email: String, password: String, context: Context) {
+
+        //valido el formato del correo electronico
+        if(!validarCorreo(context, email)){
+            Toast.makeText(context, "Correo electronico no valido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        //valido la longitud de la contraseña
+        if(!validaContraseña(context, password)){
+            Toast.makeText(context, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -40,9 +38,18 @@ class LoginViewModel : AuthViewModel() {
             }
     }
 
-
-    /**Permite recuperar la contraseña de un usuario a traves de un correo*/
+    /**
+     * Permite recuperar la contraseña de un usuario a traves de un correo
+     * @param email correo electronico del usuario para enviar enlace de recuperacion
+     * @param context contexto necesario para los avisos dentro del Toast*/
     fun recuperarContraseña(email: String, context: Context) {
+
+        //valido el formato del correo electronico
+        if(!validarCorreo(context, email)){
+            Toast.makeText(context, "Correo electronico no valido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {

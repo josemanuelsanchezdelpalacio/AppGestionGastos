@@ -40,7 +40,6 @@ fun AppNavigation(){
         composable(AppScreen.RegisterScreen.route){
             RegisterScreen(navController, mvvm = RegisterViewModel())
         }
-
         composable(AppScreen.HomeScreen.route){
             HomeScreen(navController, mvvm = HomeViewModel(), currencyViewModel = CurrencyViewModel())
         }
@@ -57,11 +56,12 @@ fun AppNavigation(){
         composable(AppScreen.HistoryScreen.route){
             HistoryScreen(navController, mvvm = HistoryViewModel())
         }
-        composable(AppScreen.EditTransactionScreen.route,
+        composable(
+            route = AppScreen.EditTransactionScreen.route,
             arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
         ) { backStackEntry ->
             val transactionId = backStackEntry.arguments?.getString("transactionId") ?: ""
-            EditTransactionScreen(navController = navController, mvvm = EditTransactionViewModel())
+            EditTransactionScreen(navController = navController, mvvm = EditTransactionViewModel(), transactionId = transactionId)
         }
     }
 }
