@@ -58,12 +58,12 @@ object FireStoreUtil {
      * @param onSuccess Función a ejecutar en caso de éxito.
      * @param onFailure Función a ejecutar en caso de error.
      */
-    fun añadirTransaccion(collection: String, transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    fun añadirTransaccion(coleccion: String, transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
         val userId = Firebase.auth.currentUser?.uid ?: return
 
         db.collection("users")
             .document(userId)
-            .collection(collection)
+            .collection(coleccion)
             .add(transaccion)
             .addOnSuccessListener { documentReference ->
                 // Asignar el ID del documento al objeto Transaccion
@@ -75,22 +75,45 @@ object FireStoreUtil {
     }
 
     /**
-     * Elimina una transacción específica de Firestore.
+     * metodo para eliminar una transaccion especifica de Firestore.
      * @param collection Colección de la transacción ("ingresos" o "gastos")
      * @param transaccionId ID de la transacción a eliminar
      * @param onSuccess Función a ejecutar en caso de éxito
      * @param onFailure Función a ejecutar en caso de error
      */
-    fun eliminarTransaccion(collection: String, transaccionId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    fun eliminarTransaccion(coleccion: String, transaccionId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
         val userId = Firebase.auth.currentUser?.uid ?: return
 
         db.collection("users")
             .document(userId)
-            .collection(collection)
+            .collection(coleccion)
             .document(transaccionId)
             .delete()
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
+    }
+
+    fun editarTransaccion(coleccion: String, transaccion: Transaccion, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val userId = Firebase.auth.currentUser?.uid ?: return
+
+        // Asegúrate de que la transacción tiene un ID antes de intentar actualizar
+        if (transaccion.id.isEmpty()) {
+            onFailure(Exception("El ID de la transacción no puede estar vacío."))
+            return
+        }
+
+        // Actualizamos la transacción en la colección especificada
+        db.collection("users")
+            .document(userId)
+            .collection(coleccion)
+            .document(transaccion.id)  // Usamos el ID de la transacción para editarla
+            .set(transaccion)  // Puedes usar update si prefieres actualizar solo campos específicos
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
     }
 }
 

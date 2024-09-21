@@ -76,6 +76,7 @@ import java.time.format.DateTimeFormatter
 fun AddTransactionScreen(navController: NavController, mvvm: AddTransactionViewModel) {
 
     val uiState by mvvm.uiState.collectAsState()
+
     val context = LocalContext.current
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -91,7 +92,7 @@ fun AddTransactionScreen(navController: NavController, mvvm: AddTransactionViewM
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text(text = "Añadir Transacción", color = Blanco) },
+                    title = { Text(text = "Añadir Transacción", color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch {
@@ -119,47 +120,44 @@ fun AddTransactionScreen(navController: NavController, mvvm: AddTransactionViewM
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, navController: NavController, mvvm: AddTransactionViewModel, context: Context) {
+
+    LaunchedEffect(uiState.tipo) {
+        if(uiState.tipo.isNotEmpty()){
+            uiState.categorias = obtenerCategorias(uiState.tipo)
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         OutlinedTextField(
-            value = if(uiState.cantidad == 0.0) "" else uiState.cantidad.toString(),
-            onValueChange = { mvvm.actualizarDatosTransaccion(it, uiState.categoria, uiState.tipo) },
+            value = uiState.cantidad.toString(),
+            onValueChange = { nuevaCantidad -> mvvm.actualizarDatosTransaccion(nuevaCantidad, uiState.categoria, uiState.tipo) },
             label = { Text("Cantidad") },
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             leadingIcon = { Icon(imageVector = Icons.Filled.AttachMoney, contentDescription = "Cantidad") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = NaranjaOscuro,
-                unfocusedBorderColor = Gris
-            )
+                .padding(bottom = 8.dp)
         )
 
         OutlinedTextField(
             value = uiState.categoria,
-            onValueChange = { mvvm.actualizarDatosTransaccion(uiState.cantidad.toString(), it, uiState.tipo) },
+            onValueChange = { nuevaCategoria -> mvvm.actualizarDatosTransaccion(uiState.cantidad.toString(), nuevaCategoria, uiState.tipo) },
             label = { Text("Categoria") },
             singleLine = true,
             leadingIcon = { Icon(imageVector = Icons.Filled.Category, contentDescription = "Descripcion") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = NaranjaOscuro,
-                unfocusedBorderColor = Gris
-            )
+                .padding(bottom = 8.dp)
         )
 
         Row(
@@ -189,8 +187,6 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
             }
         }
 
-        Divider(color = Color.LightGray, thickness = 1.dp)
-
         if(uiState.tipo.isNotEmpty()){
             LazyColumn(
                 modifier = Modifier
@@ -213,12 +209,13 @@ fun AddTransactionScreenBody(paddingValues: PaddingValues, uiState: UiState, nav
             onClick = {
                 val cantidadValida = validarCantidad(context, uiState.cantidad.toString())
                 val categoriaValida = validarDescripcion(context, uiState.categoria)
+                val tipoSeleccionado = uiState.tipo.isNotEmpty()
 
-                if (!uiState.tipo.isNotEmpty()) {
-                    Toast.makeText(context, "Debe seleccionar Ingresos o Gastos", Toast.LENGTH_SHORT).show()
+                if (!tipoSeleccionado) {
+                    Toast.makeText(context, "Debes seleccionar Ingresos o Gastos", Toast.LENGTH_SHORT).show()
                 }
 
-                if (cantidadValida && categoriaValida) {
+                if (cantidadValida && categoriaValida && tipoSeleccionado) {
                     val transaction = Transaccion(
                         id = "",
                         cantidad = uiState.cantidad,

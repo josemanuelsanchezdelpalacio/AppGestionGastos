@@ -48,3 +48,4 @@ open class BaseTransactionViewModel : ViewModel() {
         )
     }
 }
+

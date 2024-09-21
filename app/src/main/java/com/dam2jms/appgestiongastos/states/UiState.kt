@@ -29,7 +29,7 @@ data class UiState(
     var tipo: String = "",
 
     //para addTransactionScreen
-    val categorias: List<Categoria> = emptyList(),
+    var categorias: List<Categoria> = emptyList(),
 
     //para HistoryScreen
     val transaccionesFiltradas: List<Transaccion> = emptyList(),

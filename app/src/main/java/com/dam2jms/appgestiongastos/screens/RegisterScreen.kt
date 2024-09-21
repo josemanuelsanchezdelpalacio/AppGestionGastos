@@ -1,6 +1,7 @@
 package com.dam2jms.appgestiongastos.screens
 
 import android.os.Build
+import android.widget.Space
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -34,6 +35,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -69,7 +72,7 @@ fun RegisterScreen(navController: NavController, mvvm: RegisterViewModel){
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "GESTION GASTOS", color = Blanco) },
+                title = { Text(text = "GESTION DE GASTOS", color = Blanco, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }
                     ) {
@@ -84,7 +87,6 @@ fun RegisterScreen(navController: NavController, mvvm: RegisterViewModel){
         }
     ) {
         paddingValues ->
-
         //llamo al componente para el diseño del fondo
         fondoPantalla{
             RegisterBodyScreen(paddingValues = paddingValues, navController = navController, mvvm = mvvm, uiState = uiState)
@@ -92,6 +94,7 @@ fun RegisterScreen(navController: NavController, mvvm: RegisterViewModel){
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavController, mvvm: RegisterViewModel, uiState: UiState){
@@ -102,7 +105,7 @@ fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavControlle
         modifier = Modifier
             .padding(paddingValues)
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 32.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -111,14 +114,22 @@ fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavControlle
             painter = painterResource(id = R.drawable.imagen_logo),
             contentDescription = "icono app",
             modifier = Modifier
-                .size(180.dp)
+                .size(140.dp)
                 .clip(CircleShape)
                 .background(Blanco)
+                .padding(16.dp)
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Registrate", style = MaterialTheme.typography.headlineMedium, color = Blanco)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Text(
+            text = "Crear cuenta",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Blanco,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
             value = uiState.email,
@@ -126,10 +137,17 @@ fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavControlle
             label = { Text("Correo electronico") },
             singleLine = true,
             leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = "Correo electronico") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp)
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Blanco,
+                unfocusedBorderColor = Blanco.copy(0.7f),
+                focusedLabelColor = Blanco,
+                unfocusedLabelColor = Blanco.copy(0.7f),
+                containerColor = Blanco
+            )
         )
+        
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = uiState.password,
@@ -152,12 +170,17 @@ fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavControlle
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Password
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Blanco,
+                unfocusedBorderColor = Blanco.copy(0.7f),
+                focusedLabelColor = Blanco,
+                unfocusedLabelColor = Blanco.copy(0.7f),
+                containerColor = Blanco
+            )
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
@@ -169,11 +192,11 @@ fun RegisterBodyScreen(paddingValues: PaddingValues, navController: NavControlle
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(24.dp),
+                .height(56.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Blanco)
         ) {
-            Text(text = "Registrarse", color = NaranjaOscuro)
+            Text(text = "Registrarse", color = NaranjaOscuro, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(16.dp))

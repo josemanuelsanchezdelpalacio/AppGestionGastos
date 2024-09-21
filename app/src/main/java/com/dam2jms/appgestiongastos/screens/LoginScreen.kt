@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -46,8 +47,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -82,16 +85,14 @@ fun LoginScreen(navController: NavController, mvvm: LoginViewModel){
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(title = { Text(text = "GESTION GASTOS", color = Blanco)},
+            CenterAlignedTopAppBar(title = { Text(text = "GESTION DE GASTOS", color = Blanco, fontWeight = FontWeight.Bold)},
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = NaranjaOscuro,
-                    titleContentColor = NaranjaClaro
+                    titleContentColor = Blanco
                 )
             )
         }
-    ) {
-            paddingValues ->
-
+    ) { paddingValues ->
         //llamo al componente para el diseño del fondo
         fondoPantalla {
             LoginScreenBody(paddingValues = paddingValues, navController = navController, mvvm = mvvm, uiState = uiState)
@@ -99,36 +100,40 @@ fun LoginScreen(navController: NavController, mvvm: LoginViewModel){
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, mvvm: LoginViewModel, uiState: UiState) {
+
     val context = LocalContext.current
 
     Column(
         modifier = Modifier
             .padding(paddingValues)
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 32.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Image(
             painter = painterResource(id = R.drawable.imagen_logo),
-            contentDescription = "icono app",
+            contentDescription = "logo app",
             modifier = Modifier
-                .size(180.dp)
+                .size(160.dp)
                 .clip(CircleShape)
                 .background(Blanco)
         )
+        
+        Spacer(modifier = Modifier.height(32.dp))
 
         Text(
             text = "Bienvenido",
             style = MaterialTheme.typography.headlineMedium,
             color = Blanco,
-            modifier = Modifier.padding(bottom = 32.dp)
+            fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
             value = uiState.email,
@@ -136,7 +141,14 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
             label = { Text("Correo electronico") },
             singleLine = true,
             leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = "Correo electronico") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Blanco,
+                unfocusedBorderColor = Blanco.copy(0.7f),
+                focusedLabelColor = Blanco,
+                unfocusedLabelColor = Blanco.copy(0.7f),
+                containerColor = Blanco
+            )
         )
 
         OutlinedTextField(
@@ -155,7 +167,14 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Password
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Blanco,
+                unfocusedBorderColor = Blanco.copy(0.7f),
+                focusedLabelColor = Blanco,
+                unfocusedLabelColor = Blanco.copy(0.7f),
+                containerColor = Blanco
+            )
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -171,27 +190,20 @@ fun LoginScreenBody(paddingValues: PaddingValues, navController: NavController, 
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(24.dp),
+                .height(56.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Blanco)
         ) {
-            Text(text = "Iniciar sesión", color = NaranjaOscuro)
+            Text(text = "Iniciar sesión", color = NaranjaOscuro, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
         TextButton(
-            onClick = {
-                navController.navigate(AppScreen.RegisterScreen.route)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(24.dp),
-            colors = ButtonDefaults.textButtonColors(contentColor = Blanco)
+            onClick = { navController.navigate(AppScreen.RegisterScreen.route) },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Registrarse")
+            Text(text = "¿No tienes cuenta? Registrate")
         }
 
         Spacer(modifier = Modifier.height(16.dp))

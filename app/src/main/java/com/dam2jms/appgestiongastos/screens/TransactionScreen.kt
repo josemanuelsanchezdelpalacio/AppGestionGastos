@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -49,6 +51,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +60,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -92,6 +98,10 @@ fun TransactionScreen(navController: NavController, mvvm: TransactionViewModel, 
 
     val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        mvvm.leerTransacciones()
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen,
@@ -100,7 +110,7 @@ fun TransactionScreen(navController: NavController, mvvm: TransactionViewModel, 
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("TRANSACCIONES", color = Blanco) },
+                    title = { Text("TRANSACCIONES", color = Blanco, fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch {
@@ -139,53 +149,27 @@ fun TransactionScreen(navController: NavController, mvvm: TransactionViewModel, 
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = NaranjaOscuro)
                 )
             },
-            floatingActionButtonPosition = FabPosition.Center,
-            bottomBar = {
-                BottomAppBar(
-                    containerColor = NaranjaOscuro,
-                    content = {
-                        Spacer(modifier = Modifier.weight(1f))
-                        FloatingActionButton(
-                            onClick = { navController.navigate(AppScreen.AddTransactionScreen.route) },
-                            containerColor = NaranjaClaro,
-                            contentColor = Blanco,
-                            elevation = FloatingActionButtonDefaults.elevation(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = "Añadir transaccion",
-                                tint = Blanco
-                            )
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                )
-            }
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { navController.navigate(AppScreen.AddTransactionScreen.route)},
+                    containerColor = NaranjaClaro,
+                    contentColor = Blanco,
+                    shape = CircleShape,
+                    elevation = FloatingActionButtonDefaults.elevation(8.dp)
+                ) {
+                    Icon(imageVector = Icons.Filled.Add, contentDescription = "Añadir transaccion")
+                }
+            },
+            floatingActionButtonPosition = FabPosition.End
         ) { paddingValues ->
-            TransactionsScreenBody(
-                paddingValues = paddingValues,
-                navController = navController,
-                mvvm = mvvm,
-                uiState = uiState,
-                seleccionarFecha = fecha.toString(),
-                displayType = displayType,
-                onDisplayTypeChange = { displayType = it })
+            TransactionsScreenBody(paddingValues = paddingValues, navController = navController, mvvm = mvvm, uiState = uiState, seleccionarFecha = fecha.toString(), displayType = displayType, onDisplayTypeChange = { displayType = it })
         }
     }
 }
 
-
 @Composable
 @RequiresApi(Build.VERSION_CODES.O)
-fun TransactionsScreenBody(
-    paddingValues: PaddingValues,
-    navController: NavController,
-    mvvm: TransactionViewModel,
-    uiState: UiState,
-    seleccionarFecha: String,
-    displayType: String,
-    onDisplayTypeChange: (String) -> Unit
-) {
+fun TransactionsScreenBody(paddingValues: PaddingValues, navController: NavController, mvvm: TransactionViewModel, uiState: UiState, seleccionarFecha: String, displayType: String, onDisplayTypeChange: (String) -> Unit) {
 
     val fechaSeleccionada = LocalDate.parse(seleccionarFecha)
 
@@ -193,23 +177,30 @@ fun TransactionsScreenBody(
         modifier = Modifier
             .padding(paddingValues)
             .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color(0xFFFFF3E0), Color(0xFFFFE0B2) ),
+                    startY = 0f,
+                    endY = Float.POSITIVE_INFINITY
+                )
+            )
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "ultimos 30 dias",
+            text = "Ultimos 30 dias",
             style = MaterialTheme.typography.titleMedium,
             color = NaranjaOscuro,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
         Text(
             text = fechaSeleccionada.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
             color = NaranjaOscuro,
-            modifier = Modifier.padding(bottom = 8.dp),
+            modifier = Modifier.padding(bottom = 16.dp),
             fontWeight = FontWeight.Bold,
-            fontSize = 24.sp
+            fontSize = 28.sp
         )
 
         mvvm.horizontalCalendar(
@@ -220,32 +211,32 @@ fun TransactionsScreenBody(
             }
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+                .clip(RoundedCornerShape(20.dp))
+                .background(NaranjaClaro.copy(alpha = 0.1f))
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             RadioButton(
                 selected = displayType == "ingresos",
                 onClick = { onDisplayTypeChange("ingresos") },
                 colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
             )
-
             Text(text = "Ingresos", modifier = Modifier.align(Alignment.CenterVertically))
-            Spacer(modifier = Modifier.height(16.dp))
 
             RadioButton(
                 selected = displayType == "gastos",
                 onClick = { onDisplayTypeChange("gastos") },
                 colors = RadioButtonDefaults.colors(selectedColor = NaranjaClaro)
             )
-
             Text(text = "Gastos", modifier = Modifier.align(Alignment.CenterVertically))
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         val filtroTransacciones = if (displayType == "ingresos") {
             uiState.ingresos.filter { it.fecha == seleccionarFecha }
@@ -255,9 +246,8 @@ fun TransactionsScreenBody(
 
         if (filtroTransacciones.isNotEmpty()) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 64.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 80.dp)
             ) {
                 items(filtroTransacciones) { transaccion ->
                     TransactionItem(
@@ -285,3 +275,4 @@ fun TransactionsScreenBody(
         }
     }
 }
+
